@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSSC WUSHU - Management System</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,sans-serif; }
+  body { background:linear-gradient(145deg,#f0f4f8,#dce4ef); min-height:100vh; padding:15px; color:#1e2f4a; }
+  .container { max-width:1400px; margin:0 auto; }
+  .header { background:#0b2b3d; color:#fff; padding:20px 25px; border-radius:40px 40px 20px 20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:15px; box-shadow:0 10px 20px rgba(0,0,0,.15); margin-bottom:20px; }
+  .logo h1 { font-size:26px; font-weight:800; letter-spacing:1px; color:#fff; }
+  .logo h1 span { color:#f7c35c; }
+  .logo small { color:#b0c2d9; font-size:11px; letter-spacing:2px; display:block; margin-top:2px; }
+  .header-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .btn { border:none; padding:10px 18px; border-radius:25px; font-weight:600; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-family:inherit; line-height:1; }
+  .btn-gold { background:#f7c35c; color:#0b2b3d; box-shadow:0 3px 0 #b38f3a; }
+  .btn-gold:hover { background:#f5b83d; transform:translateY(-2px); }
+  .btn-green { background:#2e7d5e; color:#fff; box-shadow:0 3px 0 #1b4e39; }
+  .btn-green:hover { background:#266a4f; }
+  .btn-red { background:#c0392b; color:#fff; box-shadow:0 3px 0 #8b281e; }
+  .btn-red:hover { background:#a93226; }
+  .btn-blue { background:#2c6fa8; color:#fff; box-shadow:0 3px 0 #1d4e79; }
+  .btn-blue:hover { background:#245d8e; }
+  .btn-sm { padding:7px 14px; font-size:12px; }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; background:#fff; padding:6px; border-radius:50px; box-shadow:0 4px 12px rgba(0,0,0,.06); }
+  .tab { flex:1; min-width:110px; padding:12px 15px; border-radius:40px; background:transparent; border:none; cursor:pointer; font-weight:600; color:#4a5e77; transition:.2s; font-size:13px; font-family:inherit; }
+  .tab.active { background:#0b2b3d; color:#fff; }
+  .tab:hover:not(.active) { background:#e9edf5; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .card { background:#fff; border-radius:20px; padding:20px; box-shadow:0 10px 25px -8px rgba(0,20,40,.12); margin-bottom:20px; }
+  .card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px; border-bottom:3px solid #f7c35c; padding-bottom:12px; }
+  .card-header h2 { font-size:20px; color:#0b2b3d; display:flex; align-items:center; gap:10px; }
+  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table { width:100%; border-collapse:collapse; min-width:580px; background:#fff; }
+  th, td { padding:12px 10px; text-align:left; border-bottom:1px solid #e2e8f0; font-size:13px; }
+  th { background:#f8faff; color:#0b2b3d; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+  tr:hover td { background:#fafbfd; }
+  .empty { text-align:center; padding:40px 20px; color:#8898ab; }
+  .empty .icon { font-size:44px; margin-bottom:12px; color:#c5d0de; }
+  .badge { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; display:inline-block; }
+  .badge-green { background:#d4f0e2; color:#1b4e39; }
+  .badge-red { background:#fbd9d4; color:#8b281e; }
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+  .form-group { display:flex; flex-direction:column; gap:5px; }
+  .form-group label { font-size:11px; font-weight:700; color:#4a5e77; text-transform:uppercase; letter-spacing:.5px; }
+  .form-group input, .form-group select, .form-group textarea { padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:14px; font-family:inherit; background:#fbfcfe; color:#1e2f4a; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:#f7c35c; background:#fff; }
+  .form-group textarea { resize:vertical; min-height:70px; }
+  .form-actions { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; }
+  .stat-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+  .stat-box { flex:1; min-width:110px; background:#f8faff; border-radius:14px; padding:14px; border-left:5px solid #f7c35c; }
+  .stat-box .num { font-size:24px; font-weight:800; color:#0b2b3d; line-height:1.1; }
+  .stat-box .lbl { font-size:10px; color:#6b7a8f; text-transform:uppercase; font-weight:700; letter-spacing:.5px; margin-top:4px; }
+  .stat-box.green { border-left-color:#2e7d5e; }
+  .stat-box.red { border-left-color:#c0392b; }
+  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(11,43,61,.7); display:none; align-items:center; justify-content:center; z-index:9999; padding:15px; overflow-y:auto; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:20px; padding:25px; max-width:520px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,.35); margin:auto; }
+  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+  .modal-header h3 { color:#0b2b3d; font-size:19px; }
+  .close-x { background:none; border:none; font-size:26px; cursor:pointer; color:#8898ab; line-height:1; padding:0 5px; }
+  .close-x:hover { color:#c0392b; }
+  .month-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:20px; }
+  .month-card { background:#f8faff; border:2px solid #e2e8f0; border-radius:14px; padding:14px; cursor:pointer; transition:.2s; text-align:center; }
+  .month-card:hover { border-color:#f7c35c; transform:translateY(-3px); box-shadow:0 8px 16px rgba(0,0,0,.08); }
+  .month-card.active { background:#0b2b3d; color:#fff; border-color:#0b2b3d; }
+  .month-card .m-name { font-weight:700; font-size:15px; margin-bottom:4px; }
+  .month-card .m-info { font-size:11px; opacity:.85; }
+  .month-card.active .m-info { color:#f7c35c; }
+  .date-list { display:flex; flex-direction:column; gap:8px; }
+  .date-item { background:#f8faff; border-radius:12px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-left:5px solid #2e7d5e; cursor:pointer; transition:.2s; }
+  .date-item:hover { background:#eef4ff; transform:translateX(3px); }
+  .date-item.selected { background:#0b2b3d; color:#fff; border-left-color:#f7c35c; }
+  .date-item.selected .date-meta { color:#f7c35c; }
+  .date-label { font-weight:700; font-size:15px; }
+  .date-meta { font-size:12px; color:#6b7a8f; margin-top:2px; }
+  .ach-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+  .ach-card { background:#f8faff; border-radius:16px; overflow:hidden; border-left:6px solid #f7c35c; box-shadow:0 6px 15px rgba(0,0,0,.05); display:flex; flex-direction:column; }
+  .ach-photo { width:100%; height:160px; background:#d9e2ef; display:flex; align-items:center; justify-content:center; font-size:48px; color:#b0c2d9; overflow:hidden; }
+  .ach-photo img { width:100%; height:100%; object-fit:cover; }
+  .ach-body { padding:16px; flex:1; }
+  .ach-body h4 { color:#0b2b3d; margin-bottom:5px; display:flex; align-items:center; gap:8px; font-size:15px; }
+  .ach-body p { font-size:13px; color:#4a5e77; margin-bottom:10px; }
+  .ach-meta { display:flex; gap:8px; flex-wrap:wrap; font-size:11px; color:#6b7a8f; margin-bottom:10px; }
+  .ach-actions { display:flex; gap:6px; }
+  .toast { position:fixed; bottom:25px; right:25px; background:#0b2b3d; color:#fff; padding:14px 24px; border-radius:40px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.3); border-left:6px solid #f7c35c; opacity:0; transform:translateY(20px); transition:.3s; pointer-events:none; z-index:99999; font-size:14px; max-width:90vw; }
+  .toast.show { opacity:1; transform:none; }
+  .search-box { display:flex; align-items:center; gap:8px; background:#f8faff; border:2px solid #e2e8f0; border-radius:25px; padding:8px 16px; flex:1; min-width:180px; }
+  .search-box input { border:none; background:transparent; flex:1; font-size:14px; outline:none; font-family:inherit; padding:4px 0; }
+  .year-select { padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; font-weight:700; font-family:inherit; color:#0b2b3d; background:#fff; }
+  @media (max-width:600px) {
+    .logo h1 { font-size:20px; }
+    .card { padding:14px; }
+    .header { padding:14px; }
+    .tab { font-size:11px; padding:10px 8px; min-width:80px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <h1>DSSC <span>WUSHU</span></h1>
+      <small>MANAGEMENT SYSTEM</small>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-gold" id="btnAddMember">➕ Add Member</button>
+      <button class="btn btn-blue btn-sm" id="btnBackup">💾 Backup</button>
+      <button class="btn btn-red btn-sm" id="btnRestore">📂 Restore</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="members">👥 Members</button>
+    <button class="tab" data-tab="attendance">✅ Attendance</button>
+    <button class="tab" data-tab="payments">💰 Payments</button>
+    <button class="tab" data-tab="achievements">🏆 Achievements</button>
+  </div>
+
+  <div class="panel active" id="panel-members">
+    <div class="card">
+      <div class="card-header">
+        <h2>👥 Team Members</h2>
+        <div class="search-box">
+          🔍 <input id="memberSearch" placeholder="Search by name or phone..." type="text">
+        </div>
+      </div>
+      <div class="table-wrap" id="membersTableWrap">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Age</th><th>Phone</th><th>Parent</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="membersBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="membersEmpty" style="display:none;">
+        <div class="icon">👥</div>
+        <p>No members yet. Click <strong>"Add Member"</strong> to register.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-attendance">
+    <div class="card">
+      <div class="card-header">
+        <h2>✅ Attendance Register</h2>
+      </div>
+      <div style="background:#f8faff;border-radius:14px;padding:14px;margin-bottom:18px;">
+        <div class="form-group" style="max-width:280px;">
+          <label>📅 Select Date</label>
+          <input id="attendanceDate" type="date">
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box green"><div class="num" id="statPresent">0</div><div class="lbl">Present</div></div>
+        <div class="stat-box red"><div class="num" id="statAbsent">0</div><div class="lbl">Absent</div></div>
+        <div class="stat-box"><div class="num" id="statTotal">0</div><div class="lbl">Total</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+        <button class="btn btn-green btn-sm" id="btnMarkAll">✅ Mark All Present</button>
+        <button class="btn btn-red btn-sm" id="btnClearDay">🧹 Clear This Day</button>
+      </div>
+      <h3 style="color:#0b2b3d;margin-bottom:14px;font-size:15px;">📋 Who came on this date</h3>
+      <div class="table-wrap" id="attendanceTableWrap">
+        <table>
+          <thead><tr><th>#</th><th>Member Name</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="attendanceBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="attendanceEmpty" style="display:none;">
+        <div class="icon">📅</div>
+        <p>No members added yet.</p>
+      </div>
+      <hr style="margin:25px 0;border:none;border-top:2px dashed #e2e8f0;">
+      <h3 style="color:#0b2b3d;margin-bottom:12px;font-size:15px;">🕐 All Recorded Days</h3>
+      <p style="color:#6b7a8f;font-size:12px;margin-bottom:12px;">Click a date to see who attended on that day.</p>
+      <div class="date-list" id="dateList"></div>
+      <div class="empty" id="dateListEmpty" style="display:none;">
+        <div class="icon">📅</div>
+        <p>No attendance recorded yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-payments">
+    <div class="card">
+      <div class="card-header">
+        <h2>💰 Monthly Payments (Rs. 1000)</h2>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px;background:#f8faff;padding:14px;border-radius:14px;">
+        <label style="font-weight:700;color:#4a5e77;font-size:13px;">📆 YEAR:</label>
+        <select class="year-select" id="paymentYear"></select>
+      </div>
+      <h3 style="color:#0b2b3d;margin-bottom:12px;font-size:15px;">📅 Select a Month</h3>
+      <div class="month-grid" id="monthGrid"></div>
+      <div id="monthDetail" style="display:none;margin-top:20px;">
+        <div class="card-header">
+          <h2 style="font-size:16px;">🧾 <span id="selectedMonthLabel"></span></h2>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box green"><div class="num" id="statPaid">0</div><div class="lbl">Paid</div></div>
+          <div class="stat-box red"><div class="num" id="statUnpaid">0</div><div class="lbl">Unpaid</div></div>
+          <div class="stat-box"><div class="num" id="statCollected">Rs. 0</div><div class="lbl">Collected</div></div>
+          <div class="stat-box red"><div class="num" id="statPending">Rs. 0</div><div class="lbl">Pending</div></div>
+        </div>
+        <div class="table-wrap" id="paymentsTableWrap">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Amount</th><th>Receipt</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="paymentsBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="empty" id="monthNoSelection">
+        <div class="icon">👆</div>
+        <p>Click a month above to see who paid.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-achievements">
+    <div class="card">
+      <div class="card-header">
+        <h2>🏆 Achievements &amp; Wins</h2>
+        <button class="btn btn-gold" id="btnAddAch">➕ Add Achievement</button>
+      </div>
+      <div class="ach-grid" id="achGrid"></div>
+      <div class="empty" id="achEmpty" style="display:none;">
+        <div class="icon">🏆</div>
+        <p>No achievements recorded yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="memberModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="memberModalTitle">➕ Add New Member</h3>
+      <button class="close-x" data-close="memberModal" type="button">×</button>
+    </div>
+    <form id="memberForm">
+      <input id="memberId" type="hidden">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1;"><label>Full Name *</label><input id="mName" required type="text"></div>
+        <div class="form-group"><label>Date of Birth</label><input id="mDob" type="date"></div>
+        <div class="form-group"><label>Age</label><input id="mAge" min="4" max="80" type="number"></div>
+        <div class="form-group"><label>Phone</label><input id="mPhone" type="tel"></div>
+        <div class="form-group"><label>Parent / Guardian</label><input id="mParent" type="text"></div>
+        <div class="form-group"><label>Parent Phone</label><input id="mParentPhone" type="tel"></div>
+        <div class="form-group"><label>Joined Date</label><input id="mJoined" type="date"></div>
+        <div class="form-group" style="grid-column:1/-1;"><label>Address</label><input id="mAddress" type="text"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-green" type="submit">💾 Save Member</button>
+        <button class="btn btn-gold" data-close="memberModal" type="button">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="achModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="achModalTitle">🏆 Add Achievement</h3>
+      <button class="close-x" data-close="achModal" type="button">×</button>
+    </div>
+    <form id="achForm">
+      <input id="achId" type="hidden">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1;"><label>Title *</label><input id="achTitle" required type="text"></div>
+        <div class="form-group"><label>Member / Team</label><select id="achMember"><option value="">-- Team --</option></select></div>
+        <div class="form-group"><label>Medal / Rank</label><select id="achRank"><option value="">-- Select --</option><option>🥇 Gold (1st)</option><option>🥈 Silver (2nd)</option><option>🥉 Bronze (3rd)</option><option>Participation</option><option>Special Award</option></select></div>
+        <div class="form-group"><label>Date</label><input id="achDate" type="date"></div>
+        <div class="form-group"><label>Location</label><input id="achLocation" type="text"></div>
+        <div class="form-group" style="grid-column:1/-1;"><label>Description</label><textarea id="achDesc"></textarea></div>
+        <div class="form-group" style="grid-column:1/-1;"><label>Photo</label><input accept="image/*" id="achPhoto" style="padding:8px;border:2px dashed #e2e8f0;border-radius:10px;background:#fbfcfe;"><div id="achPhotoPreview" style="margin-top:10px;"></div><input id="achPhotoData" type="hidden"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-green" type="submit">💾 Save Achievement</button>
+        <button class="btn btn-gold" data-close="achModal" type="button">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+(function() {
+  'use strict';
+  var STORAGE_KEY = 'dssc_wushu_v5';
+  var DB = { members: [], attendance: {}, payments: {}, achievements: [] };
+  var activeAttendanceDate = null;
+  var activePaymentYear = new Date().getFullYear();
+  var activePaymentMonth = null;
+
+  function $(id) { return document.getElementById(id); }
+  function uid(p) { return (p||'id') + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function esc(s) { if (s === null || s === undefined) return ''; return String(s).replace(/[&<>"']/g, function(m) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._timer); t._timer = setTimeout(function() { t.classList.remove('show'); }, 2200); }
+  function showModal(id) { $(id).classList.add('show'); }
+  function hideModal(id) { $(id).classList.remove('show'); }
+  function fmtDate(iso) { if (!iso) return '—'; var d = new Date(iso + 'T00:00:00'); if (isNaN(d.getTime())) return iso; return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+  function monthName(m) { var n = ['January','February','March','April','May','June','July','August','September','October','November','December']; return n[parseInt(m,10)-1] || ''; }
+
+  function loadDB() { try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) { var p = JSON.parse(raw); if (p.members) DB.members = p.members; if (p.attendance) DB.attendance = p.attendance; if (p.payments) DB.payments = p.payments; if (p.achievements) DB.achievements = p.achievements; } } catch(e) {} }
+  function saveDB() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch(e) { toast('Storage full!'); } }
+
+  function renderMembers() {
+    var search = ($('memberSearch') ? $('memberSearch').value : '').toLowerCase();
+    var tbody = $('membersBody'); var empty = $('membersEmpty'); tbody.innerHTML = '';
+    var filtered = DB.members.filter(function(m) { if (!search) return true; return (m.name||'').toLowerCase().indexOf(search) > -1 || (m.phone||'').toLowerCase().indexOf(search) > -1 || (m.parent||'').toLowerCase().indexOf(search) > -1; });
+    if (DB.members.length === 0) { empty.style.display = 'block'; $('membersTableWrap').style.display = 'none'; return; }
+    empty.style.display = 'none'; $('membersTableWrap').style.display = 'block';
+    if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#8898ab;">No matching members.</td></tr>'; return; }
+    filtered.forEach(function(m, i) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + (i+1) + '</td><td><strong>' + esc(m.name) + '</strong>' + (m.address ? '<br><small style="color:#8898ab;">📍 ' + esc(m.address) + '</small>' : '') + '</td><td>' + (m.age ? esc(m.age) + ' yrs' : '—') + '</td><td>' + (esc(m.phone) || '—') + '</td><td>' + (esc(m.parent) || '—') + (m.parentPhone ? '<br><small style="color:#8898ab;">📞 ' + esc(m.parentPhone) + '</small>' : '') + '</td><td>' + fmtDate(m.joined) + '</td><td><button type="button" class="btn btn-blue btn-sm edit-member" data-id="' + m.id + '">✏️</button> <button type="button" class="btn btn-red btn-sm del-member" data-id="' + m.id + '">🗑️</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openMemberModal(id) {
+    $('memberForm').reset(); $('memberId').value = ''; $('memberModalTitle').textContent = '➕ Add New Member';
+    if (id) {
+      var m = DB.members.find(function(x) { return x.id === id; });
+      if (m) {
+        $('memberModalTitle').textContent = '✏️ Edit Member';
+        $('memberId').value = m.id; $('mName').value = m.name || ''; $('mDob').value = m.dob || ''; $('mAge').value = m.age || ''; $('mPhone').value = m.phone || ''; $('mParent').value = m.parent || ''; $('mParentPhone').value = m.parentPhone || ''; $('mJoined').value = m.joined || ''; $('mAddress').value = m.address || '';
+      }
+    } else { $('mJoined').value = todayISO(); }
+    showModal('memberModal');
+  }
+
+  function saveMember(e) {
+    e.preventDefault();
+    var id = $('memberId').value;
+    var data = { name: $('mName').value.trim(), dob: $('mDob').value, age: $('mAge').value, phone: $('mPhone').value.trim(), parent: $('mParent').value.trim(), parentPhone: $('mParentPhone').value.trim(), joined: $('mJoined').value || todayISO(), address: $('mAddress').value.trim() };
+    if (!data.name) { toast('Name is required'); return; }
+    if (id) { var idx = DB.members.findIndex(function(m) { return m.id === id; }); if (idx > -1) DB.members[idx] = Object.assign(DB.members[idx], data); toast('Member updated'); }
+    else { data.id = uid('m'); DB.members.push(data); toast('Member added'); }
+    saveDB(); hideModal('memberModal'); renderAll();
+  }
+
+  function deleteMember(id) {
+    var m = DB.members.find(function(x) { return x.id === id; });
+    if (!m) return;
+    if (!confirm('Delete member "' + m.name + '"?')) return;
+    DB.members = DB.members.filter(function(x) { return x.id !== id; });
+    saveDB(); toast('Member deleted'); renderAll();
+  }
+
+  function renderAttendance() {
+    var dateEl = $('attendanceDate');
+    if (!dateEl.value) dateEl.value = activeAttendanceDate || todayISO();
+    activeAttendanceDate = dateEl.value;
+    var date = dateEl.value;
+    var tbody = $('attendanceBody'); var empty = $('attendanceEmpty'); tbody.innerHTML = '';
+    if (DB.members.length === 0) {
+      empty.style.display = 'block';
+      $('attendanceTableWrap').style.display = 'none';
+      $('statPresent').textContent = '0'; $('statAbsent').textContent = '0'; $('statTotal').textContent = '0';
+      renderDateList(); return;
+    }
+    empty.style.display = 'none';
+    $('attendanceTableWrap').style.display = 'block';
+    var dayData = DB.attendance[date] || {}; var presentCount = 0;
+    DB.members.forEach(function(m, i) {
+      var isPresent = !!dayData[m.id]; if (isPresent) presentCount++;
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + (i+1) + '</td><td><strong>' + esc(m.name) + '</strong></td><td>' + (isPresent ? '<span class="badge badge-green">✅ Present</span>' : '<span class="badge badge-red">❌ Absent</span>') + '</td><td><button type="button" class="btn ' + (isPresent ? 'btn-red' : 'btn-green') + ' btn-sm toggle-att" data-id="' + m.id + '">' + (isPresent ? 'Mark Absent' : 'Mark Present') + '</button></td>';
+      tbody.appendChild(tr);
+    });
+    $('statPresent').textContent = presentCount;
+    $('statAbsent').textContent = DB.members.length - presentCount;
+    $('statTotal').textContent = DB.members.length;
+    renderDateList();
+  }
+
+  function renderDateList() {
+    var list = $('dateList'); var empty = $('dateListEmpty'); list.innerHTML = '';
+    var dates = Object.keys(DB.attendance).filter(function(d) { var rec = DB.attendance[d]; return rec && Object.keys(rec).some(function(k) { return rec[k]; }); }).sort().reverse();
+    if (dates.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    dates.forEach(function(d) {
+      var rec = DB.attendance[d];
+      var c = Object.keys(rec).filter(function(k) { return rec[k]; }).length;
+      var item = document.createElement('div');
+      item.className = 'date-item' + (d === activeAttendanceDate ? ' selected' : '');
+      item.setAttribute('data-date', d);
+      item.innerHTML = '<div><div class="date-label">📅 ' + fmtDate(d) + '</div><div class="date-meta">' + c + ' member' + (c !== 1 ? 's' : '') + ' attended</div></div><span>›</span>';
+      list.appendChild(item);
+    });
+  }
+
+  function toggleAttendance(memberId) { var date = $('attendanceDate').value || todayISO(); if (!DB.attendance[date]) DB.attendance[date] = {}; DB.attendance[date][memberId] = !DB.attendance[date][memberId]; saveDB(); renderAttendance(); }
+  function markAllPresent() { var date = $('attendanceDate').value || todayISO(); if (!DB.attendance[date]) DB.attendance[date] = {}; DB.members.forEach(function(m) { DB.attendance[date][m.id] = true; }); saveDB(); renderAttendance(); toast('All marked present'); }
+  function clearDayAttendance() { var date = $('attendanceDate').value || todayISO(); if (!confirm('Clear attendance for ' + fmtDate(date) + '?')) return; delete DB.attendance[date]; saveDB(); renderAttendance(); toast('Day cleared'); }
+
+  function renderPaymentYearOptions() {
+    var sel = $('paymentYear'); var cy = new Date().getFullYear(); sel.innerHTML = '';
+    for (var y = cy - 3; y <= cy + 2; y++) {
+      var opt = document.createElement('option'); opt.value = y; opt.textContent = y;
+      if (y === activePaymentYear) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+
+  function renderMonthGrid() {
+    var grid = $('monthGrid'); grid.innerHTML = '';
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    for (var i = 1; i <= 12; i++) {
+      (function(m) {
+        var key = activePaymentYear + '-' + String(m).padStart(2, '0');
+        var rec = DB.payments[key] || {};
+        var paidCount = Object.keys(rec).filter(function(k) { return rec[k] && rec[k].paid; }).length;
+        var isActive = key === activePaymentMonth;
+        var card = document.createElement('div');
+        card.className = 'month-card' + (isActive ? ' active' : '');
+        card.setAttribute('data-month', key);
+        card.innerHTML = '<div class="m-name">' + months[m-1] + '</div><div class="m-info">' + paidCount + ' / ' + DB.members.length + ' paid</div>';
+        grid.appendChild(card);
+      })(i);
+    }
+  }
+
+  function renderPayments() {
+    if (!activePaymentMonth) { $('monthDetail').style.display = 'none'; $('monthNoSelection').style.display = 'block'; renderMonthGrid(); return; }
+    var month = activePaymentMonth;
+    $('monthDetail').style.display = 'block';
+    $('monthNoSelection').style.display = 'none';
+    var year = month.split('-')[0]; var mNum = month.split('-')[1];
+    $('selectedMonthLabel').textContent = monthName(mNum) + ' ' + year;
+    var tbody = $('paymentsBody'); tbody.innerHTML = '';
+    if (!DB.payments[month]) DB.payments[month] = {};
+    var monthData = DB.payments[month]; var paidCount = 0;
+    DB.members.forEach(function(m, i) {
+      var rec = monthData[m.id] || {}; var isPaid = !!rec.paid;
+      if (isPaid) paidCount++;
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + (i+1) + '</td><td><strong>' + esc(m.name) + '</strong></td><td>' + (esc(m.phone) || '—') + '</td><td>Rs. 1000</td><td>' + (isPaid ? '<code>' + esc(rec.receipt||'—') + '</code>' : '—') + '</td><td>' + (isPaid ? '<span class="badge badge-green">✅ Paid</span>' : '<span class="badge badge-red">⏳ Pending</span>') + '</td><td><button type="button" class="btn ' + (isPaid ? 'btn-red' : 'btn-green') + ' btn-sm toggle-pay" data-id="' + m.id + '">' + (isPaid ? 'Mark Unpaid' : 'Mark Paid') + '</button></td>';
+      tbody.appendChild(tr);
+    });
+    var total = DB.members.length;
+    $('statPaid').textContent = paidCount;
+    $('statUnpaid').textContent = total - paidCount;
+    $('statCollected').textContent = 'Rs. ' + (paidCount * 1000).toLocaleString();
+    $('statPending').textContent = 'Rs. ' + ((total - paidCount) * 1000).toLocaleString();
+  }
+
+  function togglePayment(memberId) {
+    if (!activePaymentMonth) return;
+    var month = activePaymentMonth;
+    if (!DB.payments[month]) DB.payments[month] = {};
+    var rec = DB.payments[month][memberId] || {};
+    if (rec.paid) { rec.paid = false; rec.receipt = ''; rec.date = ''; toast('Marked unpaid'); }
+    else {
+      var def = 'R' + Date.now().toString().slice(-5);
+      var ent = prompt('Enter receipt number:', def);
+      if (ent === null) return;
+      rec.paid = true; rec.receipt = ent || def; rec.date = todayISO();
+      toast('Payment recorded');
+    }
+    DB.payments[month][memberId] = rec;
+    saveDB(); renderPayments(); renderMonthGrid();
+  }
+
+  function updateMemberDropdown() {
+    var sel = $('achMember'); sel.innerHTML = '<option value="">-- Team / All --</option>';
+    DB.members.forEach(function(m) { var opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.name; sel.appendChild(opt); });
+  }
+
+  function renderAchievements() {
+    var grid = $('achGrid'); var empty = $('achEmpty'); grid.innerHTML = '';
+    if (DB.achievements.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    DB.achievements.slice().reverse().forEach(function(a) {
+      var member = DB.members.find(function(m) { return m.id === a.memberId; });
+      var card = document.createElement('div'); card.className = 'ach-card';
+      card.innerHTML = '<div class="ach-photo">' + (a.photo ? '<img src="' + a.photo + '" alt="">' : '🏆') + '</div><div class="ach-body"><h4>⭐ ' + esc(a.title) + '</h4>' + (a.rank ? '<div style="font-weight:700;color:#0b2b3d;margin-bottom:5px;">' + esc(a.rank) + '</div>' : '') + '<div class="ach-meta">' + (member ? '<span>👤 ' + esc(member.name) + '</span>' : '<span>👥 Team</span>') + (a.date ? '<span>📅 ' + fmtDate(a.date) + '</span>' : '') + (a.location ? '<span>📍 ' + esc(a.location) + '</span>' : '') + '</div>' + (a.desc ? '<p>' + esc(a.desc) + '</p>' : '') + '<div class="ach-actions"><button type="button" class="btn btn-blue btn-sm edit-ach" data-id="' + a.id + '">✏️ Edit</button> <button type="button" class="btn btn-red btn-sm del-ach" data-id="' + a.id + '">🗑️</button></div></div>';
+      grid.appendChild(card);
+    });
+  }
+
+  function openAchModal(id) {
+    $('achForm').reset();
+    $('achId').value = '';
+    $('achPhotoPreview').innerHTML = '';
+    $('achPhotoData').value = '';
+    $('achModalTitle').textContent = '🏆 Add Achievement';
+    updateMemberDropdown();
+    if (id) {
+      var a = DB.achievements.find(function(x) { return x.id === id; });
+      if (a) {
+        $('achModalTitle').textContent = '✏️ Edit Achievement';
+        $('achId').value = a.id; $('achTitle').value = a.title || ''; $('achMember').value = a.memberId || ''; $('achRank').value = a.rank || ''; $('achDate').value = a.date || ''; $('achLocation').value = a.location || ''; $('achDesc').value = a.desc || '';
+        if (a.photo) { $('achPhotoData').value = a.photo; $('achPhotoPreview').innerHTML = '<img src="' + a.photo + '" style="max-width:180px;border-radius:10px;border:2px solid #e2e8f0;">'; }
+      }
+    } else { $('achDate').value = todayISO(); }
+    showModal('achModal');
+  }
+
+  function handlePhoto(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast('Max 2MB'); e.target.value = ''; return; }
+    var r = new FileReader();
+    r.onload = function(ev) {
+      $('achPhotoData').value = ev.target.result;
+      $('achPhotoPreview').innerHTML = '<img src="' + ev.target.result + '" style="max-width:180px;border-radius:10px;border:2px solid #e2e8f0;">';
+    };
+    r.readAsDataURL(file);
+  }
+
+  function saveAch(e) {
+    e.preventDefault();
+    var id = $('achId').value;
+    var data = { title: $('achTitle').value.trim(), memberId: $('achMember').value, rank: $('achRank').value, date: $('achDate').value, location: $('achLocation').value.trim(), desc: $('achDesc').value.trim(), photo: $('achPhotoData').value || '' };
+    if (!data.title) { toast('Title required'); return; }
+    if (id) { var idx = DB.achievements.findIndex(function(a) { return a.id === id; }); if (idx > -1) DB.achievements[idx] = Object.assign(DB.achievements[idx], data); toast('Updated'); }
+    else { data.id = uid('a'); DB.achievements.push(data); toast('Achievement added!'); }
+    saveDB(); hideModal('achModal'); renderAchievements();
+  }
+
+  function deleteAch(id) { if (!confirm('Delete this achievement?')) return; DB.achievements = DB.achievements.filter(function(a) { return a.id !== id; }); saveDB(); renderAchievements(); toast('Deleted'); }
+
+  function exportData() {
+    var blob = new Blob([JSON.stringify(DB, null, 2)], { type:'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'dssc-wushu-' + todayISO() + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('Backup downloaded');
+  }
+
+  function importData() {
+    var input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+    input.onchange = function(e) {
+      var file = e.target.files[0]; if (!file) return;
+      var r = new FileReader();
+      r.onload = function(ev) {
+        try {
+          var p = JSON.parse(ev.target.result);
+          if (!confirm('Replace all data?')) return;
+          DB = { members: p.members || [], attendance: p.attendance || {}, payments: p.payments || {}, achievements: p.achievements || [] };
+          saveDB(); renderAll(); toast('Restored');
+        } catch(err) { toast('Invalid file'); }
+      };
+      r.readAsText(file);
+    };
+    input.click();
+  }
+
+  function renderAll() {
+    renderMembers(); renderAttendance(); renderPaymentYearOptions(); renderMonthGrid(); renderPayments(); renderAchievements(); updateMemberDropdown();
+  }
+
+  function bindEvents() {
+    document.querySelectorAll('.tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+        tab.classList.add('active');
+        var panel = $('panel-' + tab.getAttribute('data-tab'));
+        if (panel) panel.classList.add('active');
+      });
+    });
+
+    $('btnAddMember').addEventListener('click', function() { openMemberModal(); });
+    $('btnBackup').addEventListener('click', exportData);
+    $('btnRestore').addEventListener('click', importData);
+    $('btnAddAch').addEventListener('click', function() { openAchModal(); });
+    $('memberForm').addEventListener('submit', saveMember);
+    $('memberSearch').addEventListener('input', renderMembers);
+    $('attendanceDate').addEventListener('change', renderAttendance);
+    $('btnMarkAll').addEventListener('click', markAllPresent);
+    $('btnClearDay').addEventListener('click', clearDayAttendance);
+    $('paymentYear').addEventListener('change', function() { activePaymentYear = parseInt(this.value, 10); activePaymentMonth = null; renderMonthGrid(); renderPayments(); });
+    $('achForm').addEventListener('submit', saveAch);
+    $('achPhoto').addEventListener('change', handlePhoto);
+
+    document.querySelectorAll('[data-close]').forEach(function(btn) {
+      btn.addEventListener('click', function() { hideModal(btn.getAttribute('data-close')); });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(function(ov) {
+      ov.addEventListener('click', function(e) { if (e.target === ov) ov.classList.remove('show'); });
+    });
+
+    document.addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== document) {
+        if (t.classList) {
+          if (t.classList.contains('edit-member')) { openMemberModal(t.getAttribute('data-id')); return; }
+          if (t.classList.contains('del-member')) { deleteMember(t.getAttribute('data-id')); return; }
+          if (t.classList.contains('toggle-att')) { toggleAttendance(t.getAttribute('data-id')); return; }
+          if (t.classList.contains('toggle-pay')) { togglePayment(t.getAttribute('data-id')); return; }
+          if (t.classList.contains('edit-ach')) { openAchModal(t.getAttribute('data-id')); return; }
+          if (t.classList.contains('del-ach')) { deleteAch(t.getAttribute('data-id')); return; }
+          if (t.classList.contains('date-item')) { activeAttendanceDate = t.getAttribute('data-date'); $('attendanceDate').value = activeAttendanceDate; renderAttendance(); return; }
+          if (t.classList.contains('month-card')) { activePaymentMonth = t.getAttribute('data-month'); renderMonthGrid(); renderPayments(); return; }
+        }
+        t = t.parentNode;
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.show').forEach(function(m) { m.classList.remove('show'); });
+      }
+    });
+  }
+
+  function init() {
+    loadDB();
+    bindEvents();
+    var today = todayISO();
+    activeAttendanceDate = today;
+    $('attendanceDate').value = today;
+    activePaymentYear = new Date().getFullYear();
+    activePaymentMonth = null;
+    renderAll();
+    console.log('DSSC Wushu Ready!');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
