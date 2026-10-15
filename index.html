@@ -453,7 +453,8 @@
       <ul style="margin-left:20px;color:#6b7a8f;">
         <li>👤 Member ගේ නම, වයස, phone, parent</li>
         <li>✅ මුළු දවස් ගාන (attendance)</li>
-        <li>💰 මුළු මාස ගාන (paid) + මුළු ගෙවීම්</li>
+        <li>📅 මාස 12ම වෙන වෙනම (Jan-Dec) — Paid හෝ -</li>
+        <li>💰 මුළු ගෙවීම් (Rs.)</li>
       </ul>
     </div>
     <div class="form-group" style="margin-bottom:14px;">
@@ -992,8 +993,13 @@
     if (!year) { toast('Year select කරන්න'); return; }
     if (DB.members.length === 0) { toast('Members නැහැ'); return; }
 
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
     const rows = [];
-    rows.push(['#', 'Name', 'Age', 'Phone', 'Parent', 'Parent Phone', 'Joined', 'Days Attended', 'Months Paid', 'Total Paid (Rs.)']);
+    const header = ['#', 'Name', 'Age', 'Phone', 'Parent', 'Parent Phone', 'Joined', 'Days Attended'];
+    monthNames.forEach(function(m) { header.push(m); });
+    header.push('Total Paid (Rs.)');
+    rows.push(header);
 
     DB.members.forEach(function(m, i) {
       const age = m.age || calcAge(m.dob);
@@ -1005,16 +1011,22 @@
         }
       });
 
-      let monthsPaid = 0;
-      Object.keys(DB.payments).forEach(function(monthKey) {
-        if (monthKey.startsWith(year + '-') && DB.payments[monthKey] && DB.payments[monthKey][m.id] && DB.payments[monthKey][m.id].paid) {
-          monthsPaid++;
+      const monthStatuses = [];
+      let monthsPaidCount = 0;
+      for (let mo = 1; mo <= 12; mo++) {
+        const key = year + '-' + String(mo).padStart(2, '0');
+        const rec = DB.payments[key] ? DB.payments[key][m.id] : null;
+        if (rec && rec.paid) {
+          monthStatuses.push('Paid');
+          monthsPaidCount++;
+        } else {
+          monthStatuses.push('-');
         }
-      });
+      }
 
-      const totalPaid = monthsPaid * 1000;
+      const totalPaid = monthsPaidCount * 1000;
 
-      rows.push([
+      const row = [
         i + 1,
         m.name || '',
         age || '',
@@ -1022,10 +1034,11 @@
         m.parent || '',
         m.parent_phone || '',
         m.joined || '',
-        daysAttended,
-        monthsPaid,
-        totalPaid
-      ]);
+        daysAttended
+      ];
+      monthStatuses.forEach(function(s) { row.push(s); });
+      row.push(totalPaid);
+      rows.push(row);
     });
 
     const csvContent = rows.map(function(row) {
