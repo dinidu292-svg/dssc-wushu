@@ -1,198 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>DSSC WUSHU - Management System</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,sans-serif; -webkit-tap-highlight-color:transparent; }
-  html, body { overflow-x: hidden; max-width: 100%; }
-  body { background:linear-gradient(145deg,#f0f4f8,#dce4ef); min-height:100vh; padding:10px; color:#1e2f4a; display:flex; flex-direction:column; word-wrap: break-word; overflow-wrap: break-word; }
-  .container { max-width:1400px; margin:0 auto; width:100%; flex:1; overflow-x: hidden; }
-  .header { background:#0b2b3d; color:#fff; padding:16px 20px; border-radius:30px 30px 16px 16px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; box-shadow:0 10px 20px rgba(0,0,0,.15); margin-bottom:16px; }
-  .logo h1 { font-size:22px; font-weight:800; letter-spacing:1px; color:#fff; word-break: break-word; }
-  .logo h1 span { color:#f7c35c; }
-  .logo small { color:#b0c2d9; font-size:10px; letter-spacing:2px; display:block; margin-top:2px; }
-  .header-actions { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-  .btn { border:none; padding:10px 16px; border-radius:22px; font-weight:600; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:5px; font-size:12px; font-family:inherit; line-height:1; touch-action:manipulation; white-space:nowrap; }
-  .btn:active { transform:scale(0.96); }
-  .btn-gold { background:#f7c35c; color:#0b2b3d; box-shadow:0 3px 0 #b38f3a; }
-  .btn-gold:hover { background:#f5b83d; }
-  .btn-green { background:#2e7d5e; color:#fff; box-shadow:0 3px 0 #1b4e39; }
-  .btn-green:hover { background:#266a4f; }
-  .btn-red { background:#c0392b; color:#fff; box-shadow:0 3px 0 #8b281e; }
-  .btn-red:hover { background:#a93226; }
-  .btn-blue { background:#2c6fa8; color:#fff; box-shadow:0 3px 0 #1d4e79; }
-  .btn-blue:hover { background:#245d8e; }
-  .btn-sm { padding:8px 12px; font-size:11px; }
-  .tabs { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px; background:#fff; padding:5px; border-radius:40px; box-shadow:0 4px 12px rgba(0,0,0,.06); }
-  .tab { flex:1; min-width:70px; padding:11px 8px; border-radius:35px; background:transparent; border:none; cursor:pointer; font-weight:600; color:#4a5e77; transition:.2s; font-size:12px; font-family:inherit; touch-action:manipulation; }
-  .tab.active { background:#0b2b3d; color:#fff; }
-  .tab:hover:not(.active) { background:#e9edf5; }
-  .panel { display:none; }
-  .panel.active { display:block; }
-  .card { background:#fff; border-radius:18px; padding:16px; box-shadow:0 10px 25px -8px rgba(0,20,40,.12); margin-bottom:16px; overflow-x: hidden; }
-  .card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; border-bottom:3px solid #f7c35c; padding-bottom:10px; }
-  .card-header h2 { font-size:18px; color:#0b2b3d; display:flex; align-items:center; gap:8px; word-break: break-word; flex-wrap: wrap; }
-  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; max-width: 100%; }
-  table { width:100%; border-collapse:collapse; min-width:480px; background:#fff; }
-  th, td { padding:12px 8px; text-align:left; border-bottom:1px solid #e2e8f0; font-size:13px; word-break: break-word; overflow-wrap: break-word; }
-  th { background:#f8faff; color:#0b2b3d; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.5px; }
-  tr:hover td { background:#fafbfd; }
-  .empty { text-align:center; padding:35px 20px; color:#8898ab; }
-  .empty .icon { font-size:40px; margin-bottom:10px; color:#c5d0de; }
-  .badge { padding:4px 10px; border-radius:16px; font-size:10px; font-weight:700; display:inline-block; white-space: nowrap; }
-  .badge-green { background:#d4f0e2; color:#1b4e39; }
-  .badge-red { background:#fbd9d4; color:#8b281e; }
-  .badge-blue { background:#d4e6f7; color:#1d4e79; }
-  .badge-gold { background:#fef3d6; color:#8a6a1a; }
-  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
-  .form-group { display:flex; flex-direction:column; gap:4px; min-width: 0; }
-  .form-group label { font-size:10px; font-weight:700; color:#4a5e77; text-transform:uppercase; letter-spacing:.5px; }
-  .form-group input, .form-group select, .form-group textarea { padding:12px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; font-family:inherit; background:#fbfcfe; color:#1e2f4a; -webkit-appearance:none; width: 100%; min-width: 0; max-width: 100%; }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:#f7c35c; background:#fff; }
-  .form-group textarea { resize:vertical; min-height:70px; }
-  .form-actions { margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; }
-  .stat-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-  .stat-box { flex:1; min-width:80px; background:#f8faff; border-radius:12px; padding:12px; border-left:4px solid #f7c35c; overflow: hidden; }
-  .stat-box .num { font-size:20px; font-weight:800; color:#0b2b3d; line-height:1.1; word-break: break-word; }
-  .stat-box .lbl { font-size:9px; color:#6b7a8f; text-transform:uppercase; font-weight:700; letter-spacing:.5px; margin-top:3px; word-break: break-word; }
-  .stat-box.green { border-left-color:#2e7d5e; }
-  .stat-box.red { border-left-color:#c0392b; }
-  .stat-box.blue { border-left-color:#2c6fa8; }
-  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(11,43,61,.75); display:none; align-items:flex-start; justify-content:center; z-index:9999; padding:10px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-  .modal-overlay.show { display:flex; }
-  .modal { background:#fff; border-radius:20px; padding:20px; max-width:560px; width:100%; margin:20px auto; box-shadow:0 20px 50px rgba(0,0,0,.35); overflow-x: hidden; word-wrap: break-word; overflow-wrap: break-word; }
-  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap: 10px; }
-  .modal-header h3 { color:#0b2b3d; font-size:17px; word-break: break-word; flex: 1; min-width: 0; }
-  .close-x { background:none; border:none; font-size:28px; cursor:pointer; color:#8898ab; line-height:1; padding:0 8px; touch-action:manipulation; flex-shrink: 0; }
-  .close-x:hover { color:#c0392b; }
-  .month-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(95px,1fr)); gap:8px; margin-bottom:16px; }
-  .month-card { background:#f8faff; border:2px solid #e2e8f0; border-radius:12px; padding:12px 8px; cursor:pointer; transition:.2s; text-align:center; touch-action:manipulation; min-width: 0; overflow: hidden; }
-  .month-card:hover { border-color:#f7c35c; }
-  .month-card:active { transform:scale(0.96); }
-  .month-card.active { background:#0b2b3d; color:#fff; border-color:#0b2b3d; }
-  .month-card .m-name { font-weight:700; font-size:14px; margin-bottom:3px; }
-  .month-card .m-info { font-size:10px; opacity:.85; }
-  .month-card.active .m-info { color:#f7c35c; }
-  .date-list { display:flex; flex-direction:column; gap:6px; }
-  .date-item { background:#f8faff; border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-left:5px solid #2e7d5e; cursor:pointer; transition:.2s; touch-action:manipulation; min-width: 0; overflow: hidden; }
-  .date-item:hover { background:#eef4ff; }
-  .date-item:active { transform:scale(0.98); }
-  .date-item.selected { background:#0b2b3d; color:#fff; border-left-color:#f7c35c; }
-  .date-item.selected .date-meta { color:#f7c35c; }
-  .date-item.selected .date-names { color:#f7c35c; }
-  .date-label { font-weight:700; font-size:14px; word-break: break-word; }
-  .date-meta { font-size:11px; color:#6b7a8f; margin-top:2px; }
-  .date-names { font-size:10px; color:#2c6fa8; margin-top:3px; font-style:italic; word-break: break-word; overflow-wrap: break-word; }
-  .ach-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
-  .ach-card { background:#f8faff; border-radius:14px; overflow:hidden; border-left:5px solid #f7c35c; box-shadow:0 6px 15px rgba(0,0,0,.05); display:flex; flex-direction:column; min-width: 0; }
-  .ach-photo { width:100%; height:140px; background:#d9e2ef; display:flex; align-items:center; justify-content:center; font-size:42px; color:#b0c2d9; overflow:hidden; }
-  .ach-photo img { width:100%; height:100%; object-fit:cover; }
-  .ach-body { padding:14px; flex:1; min-width: 0; word-wrap: break-word; overflow-wrap: break-word; }
-  .ach-body h4 { color:#0b2b3d; margin-bottom:4px; display:flex; align-items:center; gap:6px; font-size:14px; word-break: break-word; flex-wrap: wrap; }
-  .ach-body p { font-size:12px; color:#4a5e77; margin-bottom:8px; word-break: break-word; overflow-wrap: break-word; }
-  .ach-meta { display:flex; gap:6px; flex-wrap:wrap; font-size:10px; color:#6b7a8f; margin-bottom:8px; word-break: break-word; }
-  .ach-actions { display:flex; gap:5px; }
-  .toast { position:fixed; bottom:20px; right:20px; left:20px; background:#0b2b3d; color:#fff; padding:14px 22px; border-radius:30px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.3); border-left:6px solid #f7c35c; opacity:0; transform:translateY(20px); transition:.3s; pointer-events:none; z-index:99999; font-size:13px; text-align:center; word-break: break-word; }
-  .toast.show { opacity:1; transform:none; }
-  .search-box { display:flex; align-items:center; gap:6px; background:#f8faff; border:2px solid #e2e8f0; border-radius:22px; padding:8px 14px; flex:1; min-width:150px; max-width: 100%; }
-  .search-box input { border:none; background:transparent; flex:1; font-size:14px; outline:none; font-family:inherit; padding:4px 0; -webkit-appearance:none; min-width: 0; }
-  .year-select { padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; font-weight:700; font-family:inherit; color:#0b2b3d; background:#fff; -webkit-appearance:none; max-width: 100%; }
-  .member-row { cursor:pointer; touch-action:manipulation; }
-  .member-row:active { background:#eef4ff; }
-  .member-name-link { color:#2c6fa8; font-weight:700; text-decoration:underline; text-decoration-style:dotted; cursor:pointer; word-break: break-word; }
-  .history-section { margin-top:16px; }
-  .history-section h4 { color:#0b2b3d; font-size:14px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #f7c35c; display:flex; align-items:center; gap:6px; word-break: break-word; flex-wrap: wrap; }
-  .history-list { display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-  .history-item { background:#f8faff; border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; font-size:12px; border-left:4px solid #2e7d5e; min-width: 0; word-break: break-word; overflow-wrap: break-word; }
-  .history-item.payment-paid { border-left-color:#2e7d5e; }
-  .history-item.payment-unpaid { border-left-color:#c0392b; }
-  .history-item.attendance-present { border-left-color:#2e7d5e; }
-  .history-date { font-weight:700; color:#0b2b3d; word-break: break-word; }
-  .history-detail { color:#6b7a8f; font-size:11px; word-break: break-word; }
-  .day-summary { background:linear-gradient(135deg,#0b2b3d,#1a4a63); border-radius:14px; padding:16px; margin-bottom:16px; color:#fff; overflow: hidden; }
-  .day-summary .day-date { font-size:18px; font-weight:800; margin-bottom:4px; word-break: break-word; }
-  .day-summary .day-count { font-size:12px; color:#f7c35c; }
-  .day-summary .day-stats { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
-  .day-summary .day-stat { background:rgba(255,255,255,.12); border-radius:10px; padding:8px 14px; flex:1; min-width:60px; text-align:center; }
-  .day-summary .day-stat .n { font-size:18px; font-weight:800; color:#fff; }
-  .day-summary .day-stat .l { font-size:9px; color:#b0c2d9; text-transform:uppercase; letter-spacing:.5px; }
-  .day-search { display:flex; align-items:center; gap:6px; background:#f8faff; border:2px solid #e2e8f0; border-radius:22px; padding:8px 14px; margin-bottom:14px; }
-  .day-search input { border:none; background:transparent; flex:1; font-size:14px; outline:none; font-family:inherit; padding:4px 0; -webkit-appearance:none; min-width: 0; }
-  .day-tabs { display:flex; gap:6px; margin-bottom:14px; flex-wrap: wrap; }
-  .day-tab { flex:1; min-width: 90px; padding:9px 10px; border-radius:20px; border:2px solid #e2e8f0; background:#fff; font-weight:700; font-size:12px; cursor:pointer; color:#4a5e77; font-family:inherit; touch-action:manipulation; white-space: nowrap; }
-  .day-tab.active { background:#0b2b3d; color:#fff; border-color:#0b2b3d; }
-  .day-tab.present-tab.active { background:#2e7d5e; border-color:#2e7d5e; }
-  .day-tab.absent-tab.active { background:#c0392b; border-color:#c0392b; }
-  .member-cards { display:flex; flex-direction:column; gap:8px; max-height:420px; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-right:4px; }
-  .member-card { background:#f8faff; border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:12px; border-left:5px solid #2e7d5e; cursor:pointer; transition:.2s; touch-action:manipulation; min-width: 0; overflow: hidden; }
-  .member-card:active { transform:scale(0.98); }
-  .member-card:hover { background:#eef4ff; }
-  .member-card.absent { border-left-color:#c0392b; background:#fdf5f4; }
-  .member-card .avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#f7c35c,#e8a93d); display:flex; align-items:center; justify-content:center; font-weight:800; color:#0b2b3d; font-size:16px; flex-shrink:0; }
-  .member-card.absent .avatar { background:linear-gradient(135deg,#e8b8b0,#d4948a); }
-  .member-card .mc-body { flex:1; min-width:0; }
-  .member-card .mc-name { font-weight:700; color:#0b2b3d; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .member-card .mc-info { font-size:11px; color:#6b7a8f; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .member-card .mc-status { flex-shrink:0; }
-  .footer { margin-top: 24px; padding: 22px 20px 18px; text-align: center; background: linear-gradient(135deg, #0b2b3d, #1a4a63); border-radius: 18px 18px 8px 8px; color: #fff; box-shadow: 0 -4px 20px rgba(0,0,0,.12); position: relative; overflow: hidden; word-wrap: break-word; overflow-wrap: break-word; }
-  .footer::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #f7c35c, #2e7d5e, #2c6fa8, #f7c35c); background-size: 200% 100%; animation: footerGlow 4s linear infinite; }
-  @keyframes footerGlow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-  .footer .footer-logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; }
-  .footer .footer-logo span { color: #f7c35c; }
-  .footer .footer-text { font-size: 13px; color: #dbe6f0; margin-bottom: 10px; letter-spacing: 0.5px; word-break: break-word; }
-  .footer .footer-text strong { color: #f7c35c; font-weight: 800; background: rgba(247,195,92,.12); padding: 3px 10px; border-radius: 20px; display: inline-block; margin: 3px 3px; }
-  .footer .footer-divider { width: 60px; height: 3px; background: #f7c35c; border-radius: 3px; margin: 10px auto; opacity: 0.7; }
-  .footer .footer-copy { font-size: 11px; color: #8fa8bf; letter-spacing: 0.5px; word-break: break-word; }
-  .footer .footer-heart { color: #e74c3c; display: inline-block; animation: heartbeat 1.5s ease-in-out infinite; }
-  @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
-
-  .login-screen { position:fixed; top:0; left:0; right:0; bottom:0; background:linear-gradient(145deg,#0b2b3d,#1a4a63); z-index:99998; display:flex; align-items:center; justify-content:center; padding:20px; }
-  .login-screen.hidden { display:none; }
-  .login-box { background:#fff; border-radius:24px; padding:32px 28px; max-width:400px; width:100%; box-shadow:0 30px 60px rgba(0,0,0,.4); }
-  .login-box .login-logo { text-align:center; margin-bottom:24px; }
-  .login-box .login-logo h1 { color:#0b2b3d; font-size:26px; font-weight:800; letter-spacing:1px; }
-  .login-box .login-logo h1 span { color:#f7c35c; }
-  .login-box .login-logo small { color:#8898ab; font-size:10px; letter-spacing:3px; display:block; margin-top:4px; }
-  .login-box .login-logo .icon { font-size:48px; margin-bottom:8px; }
-  .login-box label { display:block; font-size:11px; font-weight:700; color:#4a5e77; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
-  .login-box input { width:100%; padding:14px 16px; border:2px solid #e2e8f0; border-radius:12px; font-size:16px; font-family:inherit; background:#fbfcfe; margin-bottom:14px; }
-  .login-box input:focus { outline:none; border-color:#f7c35c; background:#fff; }
-  .login-box button { width:100%; padding:14px; border:none; border-radius:12px; background:#0b2b3d; color:#fff; font-weight:700; font-size:15px; cursor:pointer; font-family:inherit; }
-  .login-box button:hover { background:#1a4a63; }
-  .login-box button:disabled { opacity:.6; cursor:not-allowed; }
-  .login-error { background:#fbd9d4; color:#8b281e; padding:12px; border-radius:10px; font-size:12px; margin-bottom:14px; display:none; }
-  .login-error.show { display:block; }
-  .user-info { display:flex; align-items:center; gap:6px; font-size:11px; color:#b0c2d9; }
-  .user-info .email { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .sync-status { position:fixed; top:10px; right:10px; background:#2e7d5e; color:#fff; padding:6px 12px; border-radius:20px; font-size:10px; font-weight:700; z-index:99997; box-shadow:0 4px 12px rgba(0,0,0,.2); display:none; }
-  .sync-status.show { display:block; }
-  .sync-status.syncing { background:#f7c35c; color:#0b2b3d; }
-  .lock-badge { background:rgba(247,195,92,.2); color:#f7c35c; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:700; }
-
-  @media (max-width:600px) {
-    body { padding:6px; }
-    .logo h1 { font-size:16px; }
-    .card { padding:10px; border-radius:14px; }
-    .header { padding:12px 14px; }
-    .tab { font-size:10px; padding:10px 4px; min-width:50px; }
-    .btn { padding:9px 12px; font-size:11px; }
-    .stat-box .num { font-size:15px; }
-    .modal { padding:14px; }
-    .month-grid { grid-template-columns:repeat(3,1fr); gap:6px; }
-    .ach-grid { grid-template-columns:1fr; }
-    th, td { padding:9px 6px; font-size:12px; }
-    .form-group input, .form-group select, .form-group textarea { padding:11px 12px; font-size:16px; }
-    .toast { left:12px; right:12px; bottom:12px; font-size:12px; }
-    .user-info .email { max-width:80px; }
-    .member-cards { max-height:340px; }
-    .day-tab { font-size: 10px; padding: 8px 6px; min-width: 70px; }
-    .member-card .avatar { width: 38px; height: 38px; font-size: 14px; }
-  }
-</style>
-</head>
 <body>
 
 <!-- LOGIN SCREEN -->
@@ -241,14 +46,11 @@
     <button class="tab" data-tab="achievements">🏆 Achievements</button>
   </div>
 
-  <!-- MEMBERS PANEL -->
   <div class="panel active" id="panel-members">
     <div class="card">
       <div class="card-header">
         <h2>👥 Team Members</h2>
-        <div class="search-box">
-          🔍 <input id="memberSearch" placeholder="Search name/phone..." type="text">
-        </div>
+        <div class="search-box">🔍 <input id="memberSearch" placeholder="Search name/phone..." type="text"></div>
       </div>
       <p style="color:#6b7a8f;font-size:11px;margin-bottom:12px;">💡 Click a member's name to see their attendance & payment history</p>
       <div class="table-wrap" id="membersTableWrap">
@@ -264,12 +66,9 @@
     </div>
   </div>
 
-  <!-- ATTENDANCE PANEL -->
   <div class="panel" id="panel-attendance">
     <div class="card">
-      <div class="card-header">
-        <h2>✅ Attendance Register</h2>
-      </div>
+      <div class="card-header"><h2>✅ Attendance Register</h2></div>
       <div style="background:#f8faff;border-radius:12px;padding:12px;margin-bottom:14px;">
         <div class="form-group" style="max-width:260px;">
           <label>📅 Select Date</label>
@@ -307,12 +106,9 @@
     </div>
   </div>
 
-  <!-- PAYMENTS PANEL -->
   <div class="panel" id="panel-payments">
     <div class="card">
-      <div class="card-header">
-        <h2>💰 Monthly Payments (Rs. 1000)</h2>
-      </div>
+      <div class="card-header"><h2>💰 Monthly Payments (Rs. 1000)</h2></div>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;background:#f8faff;padding:12px;border-radius:12px;">
         <label style="font-weight:700;color:#4a5e77;font-size:12px;">📆 YEAR:</label>
         <select class="year-select" id="paymentYear"></select>
@@ -320,9 +116,7 @@
       <h3 style="color:#0b2b3d;margin-bottom:10px;font-size:14px;">📅 Select a Month</h3>
       <div class="month-grid" id="monthGrid"></div>
       <div id="monthDetail" style="display:none;margin-top:16px;">
-        <div class="card-header">
-          <h2 style="font-size:15px;">🧾 <span id="selectedMonthLabel"></span></h2>
-        </div>
+        <div class="card-header"><h2 style="font-size:15px;">🧾 <span id="selectedMonthLabel"></span></h2></div>
         <div class="stat-row">
           <div class="stat-box green"><div class="num" id="statPaid">0</div><div class="lbl">Paid</div></div>
           <div class="stat-box red"><div class="num" id="statUnpaid">0</div><div class="lbl">Unpaid</div></div>
@@ -343,7 +137,6 @@
     </div>
   </div>
 
-  <!-- ACHIEVEMENTS PANEL -->
   <div class="panel" id="panel-achievements">
     <div class="card">
       <div class="card-header">
@@ -366,7 +159,6 @@
   <div class="footer-copy">Made with <span class="footer-heart">❤</span> for the team &copy; <span id="footerYear"></span></div>
 </footer>
 
-<!-- MEMBER ADD/EDIT MODAL -->
 <div class="modal-overlay" id="memberModal">
   <div class="modal">
     <div class="modal-header">
@@ -393,7 +185,6 @@
   </div>
 </div>
 
-<!-- MEMBER DETAILS MODAL -->
 <div class="modal-overlay" id="memberDetailModal">
   <div class="modal">
     <div class="modal-header">
@@ -404,7 +195,6 @@
   </div>
 </div>
 
-<!-- DAY DETAIL MODAL -->
 <div class="modal-overlay" id="dayDetailModal">
   <div class="modal">
     <div class="modal-header">
@@ -415,7 +205,6 @@
   </div>
 </div>
 
-<!-- ACHIEVEMENT MODAL -->
 <div class="modal-overlay" id="achModal">
   <div class="modal">
     <div class="modal-header">
@@ -462,6 +251,7 @@
       <select id="exportYear" class="year-select" style="width:100%;"></select>
     </div>
     <div class="form-actions" style="justify-content:flex-end;">
+      <button class="btn btn-blue" id="btnDownloadWord" type="button">📄 Download Word</button>
       <button class="btn btn-green" id="btnDownloadCSV" type="button">📥 Download CSV</button>
       <button class="btn btn-gold" data-close="exportModal" type="button">Cancel</button>
     </div>
@@ -504,17 +294,14 @@
   function calcAge(dob) { if (!dob) return ''; const d = new Date(dob + 'T00:00:00'); if (isNaN(d.getTime())) return ''; const diff = Date.now() - d.getTime(); return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000)); }
   function showSync(syncing) { const s = $('syncStatus'); if (syncing) { s.textContent = '🔄 Syncing...'; s.classList.add('syncing'); } else { s.textContent = '✅ Synced'; s.classList.remove('syncing'); } s.classList.add('show'); clearTimeout(s._t); s._t = setTimeout(function() { s.classList.remove('show'); }, 2000); }
 
-  // ===== AUTH =====
   async function checkAuth() {
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
-        isAdmin = true;
-        currentUser = session.user;
+        isAdmin = true; currentUser = session.user;
         $('loginScreen').classList.add('hidden');
         $('userEmail').textContent = session.user.email;
-        await loadAll();
-        setupRealtime();
+        await loadAll(); setupRealtime();
       } else {
         isAdmin = false;
         $('loginScreen').classList.remove('hidden');
@@ -536,8 +323,7 @@
     $('loginScreen').classList.add('hidden');
     $('userEmail').textContent = data.user.email;
     toast('Welcome ' + data.user.email);
-    await loadAll();
-    setupRealtime();
+    await loadAll(); setupRealtime();
   }
 
   async function handleLogout() {
@@ -548,7 +334,6 @@
     toast('Logged out');
   }
 
-  // ===== DATA LOADING =====
   async function loadAll() {
     showSync(true);
     try {
@@ -561,10 +346,7 @@
       DB.members = mRes.data || [];
       DB.attendance = {};
       (aRes.data || []).forEach(function(r) {
-        if (r.present) {
-          if (!DB.attendance[r.date]) DB.attendance[r.date] = {};
-          DB.attendance[r.date][r.member_id] = true;
-        }
+        if (r.present) { if (!DB.attendance[r.date]) DB.attendance[r.date] = {}; DB.attendance[r.date][r.member_id] = true; }
       });
       DB.payments = {};
       (pRes.data || []).forEach(function(r) {
@@ -582,14 +364,12 @@
     if (realtimeChannel) sb.removeChannel(realtimeChannel);
     realtimeChannel = sb.channel('db-changes')
       .on('postgres_changes', { event: '*', schema: 'public' }, function(payload) {
-        console.log('Realtime:', payload);
         showSync(true);
         loadAll().then(function() { showSync(false); });
       })
       .subscribe();
   }
 
-  // ===== MEMBERS =====
   function renderMembers() {
     const search = ($('memberSearch') ? $('memberSearch').value : '').toLowerCase();
     const tbody = $('membersBody'); const empty = $('membersEmpty'); tbody.innerHTML = '';
@@ -661,13 +441,9 @@
     if (!m) return;
     const age = m.age || calcAge(m.dob);
     $('memberDetailTitle').textContent = '👤 ' + m.name;
-
     const attendedDates = [];
-    Object.keys(DB.attendance).forEach(function(date) {
-      if (DB.attendance[date] && DB.attendance[date][memberId]) attendedDates.push(date);
-    });
+    Object.keys(DB.attendance).forEach(function(date) { if (DB.attendance[date] && DB.attendance[date][memberId]) attendedDates.push(date); });
     attendedDates.sort().reverse();
-
     const paymentRecords = [];
     Object.keys(DB.payments).forEach(function(monthKey) {
       const rec = DB.payments[monthKey] ? DB.payments[monthKey][memberId] : null;
@@ -680,14 +456,12 @@
       }
     });
     paymentRecords.sort(function(a,b) { return b.month.localeCompare(a.month); });
-
     let html = '';
     html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">';
     html += '<div class="stat-box green" style="flex:1;min-width:80px;"><div class="num">' + attendedDates.length + '</div><div class="lbl">Days Attended</div></div>';
     const paidMonths = paymentRecords.filter(function(p){ return !p.unpaid; }).length;
     html += '<div class="stat-box blue" style="flex:1;min-width:80px;"><div class="num">' + paidMonths + '</div><div class="lbl">Months Paid</div></div>';
     html += '</div>';
-
     html += '<div style="background:#f8faff;border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.8;word-break:break-word;">';
     if (age) html += '<div>🎂 <strong>Age:</strong> ' + age + ' years</div>';
     if (m.phone) html += '<div>📞 <strong>Phone:</strong> ' + esc(m.phone) + '</div>';
@@ -695,12 +469,10 @@
     if (m.joined) html += '<div>📅 <strong>Joined:</strong> ' + fmtDate(m.joined) + '</div>';
     if (m.address) html += '<div>📍 <strong>Address:</strong> ' + esc(m.address) + '</div>';
     html += '</div>';
-
     html += '<div class="history-section"><h4>✅ Attendance History (' + attendedDates.length + ' days)</h4>';
     if (attendedDates.length === 0) html += '<p style="color:#8898ab;font-size:12px;text-align:center;padding:12px;">No attendance records yet.</p>';
     else { html += '<div class="history-list">'; attendedDates.forEach(function(date) { html += '<div class="history-item attendance-present" data-goto-date="' + date + '"><span class="history-date">📅 ' + fmtDate(date) + '</span><span class="badge badge-green">✅ Present</span></div>'; }); html += '</div>'; }
     html += '</div>';
-
     html += '<div class="history-section"><h4>💰 Payment History</h4>';
     if (paymentRecords.length === 0) html += '<p style="color:#8898ab;font-size:12px;text-align:center;padding:12px;">No payment records yet.</p>';
     else {
@@ -714,19 +486,16 @@
       html += '</div>';
     }
     html += '</div>';
-
     if (isAdmin) {
       html += '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">';
       html += '<button type="button" class="btn btn-blue btn-sm" data-goto-attendance="' + memberId + '">✅ Mark Attendance Today</button>';
       html += '<button type="button" class="btn btn-green btn-sm" data-mark-paid="' + memberId + '">💰 Mark Paid This Month</button>';
       html += '</div>';
     }
-
     $('memberDetailContent').innerHTML = html;
     showModal('memberDetailModal');
   }
 
-  // ===== ATTENDANCE =====
   function renderAttendance() {
     const dateEl = $('attendanceDate');
     if (!dateEl.value) dateEl.value = activeAttendanceDate || todayISO();
@@ -806,7 +575,6 @@
     toast('Day cleared');
   }
 
-  // ===== PAYMENTS =====
   function renderPaymentYearOptions() {
     const sel = $('paymentYear'); const cy = new Date().getFullYear(); sel.innerHTML = '';
     for (let y = cy - 3; y <= cy + 2; y++) {
@@ -890,7 +658,6 @@
     toast('Payment recorded ✅');
   }
 
-  // ===== ACHIEVEMENTS =====
   function updateMemberDropdown() {
     const sel = $('achMember'); sel.innerHTML = '<option value="">-- Team / All --</option>';
     DB.members.forEach(function(m) { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.name; sel.appendChild(opt); });
@@ -994,7 +761,6 @@
     if (DB.members.length === 0) { toast('Members නැහැ'); return; }
 
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
     const rows = [];
     const header = ['#', 'Name', 'Age', 'Phone', 'Parent', 'Parent Phone', 'Joined', 'Days Attended'];
     monthNames.forEach(function(m) { header.push(m); });
@@ -1003,39 +769,20 @@
 
     DB.members.forEach(function(m, i) {
       const age = m.age || calcAge(m.dob);
-
       let daysAttended = 0;
       Object.keys(DB.attendance).forEach(function(date) {
-        if (date.startsWith(year + '-') && DB.attendance[date] && DB.attendance[date][m.id]) {
-          daysAttended++;
-        }
+        if (date.startsWith(year + '-') && DB.attendance[date] && DB.attendance[date][m.id]) daysAttended++;
       });
-
       const monthStatuses = [];
       let monthsPaidCount = 0;
       for (let mo = 1; mo <= 12; mo++) {
         const key = year + '-' + String(mo).padStart(2, '0');
         const rec = DB.payments[key] ? DB.payments[key][m.id] : null;
-        if (rec && rec.paid) {
-          monthStatuses.push('Paid');
-          monthsPaidCount++;
-        } else {
-          monthStatuses.push('-');
-        }
+        if (rec && rec.paid) { monthStatuses.push('Paid'); monthsPaidCount++; }
+        else { monthStatuses.push('-'); }
       }
-
       const totalPaid = monthsPaidCount * 1000;
-
-      const row = [
-        i + 1,
-        m.name || '',
-        age || '',
-        m.phone || '',
-        m.parent || '',
-        m.parent_phone || '',
-        m.joined || '',
-        daysAttended
-      ];
+      const row = [i + 1, m.name || '', age || '', m.phone || '', m.parent || '', m.parent_phone || '', m.joined || '', daysAttended];
       monthStatuses.forEach(function(s) { row.push(s); });
       row.push(totalPaid);
       rows.push(row);
@@ -1044,9 +791,7 @@
     const csvContent = rows.map(function(row) {
       return row.map(function(cell) {
         let s = String(cell == null ? '' : cell);
-        if (s.indexOf(',') > -1 || s.indexOf('"') > -1 || s.indexOf('\n') > -1) {
-          s = '"' + s.replace(/"/g, '""') + '"';
-        }
+        if (s.indexOf(',') > -1 || s.indexOf('"') > -1 || s.indexOf('\n') > -1) s = '"' + s.replace(/"/g, '""') + '"';
         return s;
       }).join(',');
     }).join('\n');
@@ -1057,16 +802,112 @@
     const a = document.createElement('a');
     a.href = url;
     a.download = 'DSSC-Wushu-MemberSummary-' + year + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     hideModal('exportModal');
-    toast('✅ Report downloaded!');
+    toast('✅ CSV downloaded!');
   }
 
-  // ===== RENDER ALL =====
+  function downloadWord() {
+    if (!isAdmin) { toast('🔒 Login required'); return; }
+    const year = $('exportYear').value;
+    if (!year) { toast('Year select කරන්න'); return; }
+    if (DB.members.length === 0) { toast('Members නැහැ'); return; }
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
+    html += '<head><meta charset="UTF-8"><title>DSSC Wushu Report ' + year + '</title>';
+    html += '<style>';
+    html += 'body { font-family: "Segoe UI", Arial, sans-serif; padding: 20px; }';
+    html += 'h1 { color: #0b2b3d; text-align: center; font-size: 24px; margin-bottom: 5px; }';
+    html += 'h1 span { color: #f7c35c; }';
+    html += '.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 8px; }';
+    html += '.info { text-align: center; color: #888; font-size: 11px; margin-bottom: 20px; }';
+    html += 'table { width: 100%; border-collapse: collapse; font-size: 10px; }';
+    html += 'th { background-color: #0b2b3d; color: #fff; padding: 8px 5px; text-align: left; border: 1px solid #0b2b3d; font-weight: bold; }';
+    html += 'td { padding: 6px 5px; border: 1px solid #ddd; }';
+    html += 'tr:nth-child(even) td { background-color: #f8faff; }';
+    html += '.paid { color: #2e7d5e; font-weight: bold; }';
+    html += '.unpaid { color: #c0392b; }';
+    html += '.total { font-weight: bold; color: #0b2b3d; text-align: right; }';
+    html += '.footer { text-align: center; margin-top: 30px; color: #888; font-size: 11px; border-top: 2px solid #f7c35c; padding-top: 10px; }';
+    html += '.summary { margin-top: 20px; padding: 14px; background: #f8faff; border-left: 4px solid #f7c35c; font-size: 13px; line-height: 1.8; }';
+    html += '.summary b { color: #0b2b3d; }';
+    html += '</style></head><body>';
+
+    html += '<h1>DSSC <span>WUSHU</span></h1>';
+    html += '<div class="subtitle">Member Summary Report — ' + year + '</div>';
+    html += '<div class="info">Generated on: ' + new Date().toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) + '</div>';
+
+    html += '<table>';
+    html += '<thead><tr>';
+    html += '<th>#</th><th>Name</th><th>Age</th><th>Phone</th><th>Parent</th><th>Joined</th><th>Days</th>';
+    monthNames.forEach(function(m) { html += '<th>' + m + '</th>'; });
+    html += '<th>Total (Rs.)</th>';
+    html += '</tr></thead><tbody>';
+
+    let grandTotalDays = 0;
+    let grandTotalPaid = 0;
+
+    DB.members.forEach(function(m, i) {
+      const age = m.age || calcAge(m.dob);
+      let daysAttended = 0;
+      Object.keys(DB.attendance).forEach(function(date) {
+        if (date.startsWith(year + '-') && DB.attendance[date] && DB.attendance[date][m.id]) daysAttended++;
+      });
+      grandTotalDays += daysAttended;
+
+      let monthsPaidCount = 0;
+      const monthStatuses = [];
+      for (let mo = 1; mo <= 12; mo++) {
+        const key = year + '-' + String(mo).padStart(2, '0');
+        const rec = DB.payments[key] ? DB.payments[key][m.id] : null;
+        if (rec && rec.paid) { monthStatuses.push('<span class="paid">✓</span>'); monthsPaidCount++; }
+        else { monthStatuses.push('<span class="unpaid">—</span>'); }
+      }
+
+      const totalPaid = monthsPaidCount * 1000;
+      grandTotalPaid += totalPaid;
+
+      html += '<tr>';
+      html += '<td>' + (i + 1) + '</td>';
+      html += '<td><b>' + esc(m.name || '') + '</b></td>';
+      html += '<td>' + (age || '—') + '</td>';
+      html += '<td>' + esc(m.phone || '—') + '</td>';
+      html += '<td>' + esc(m.parent || '—') + '</td>';
+      html += '<td>' + (m.joined || '—') + '</td>';
+      html += '<td><b>' + daysAttended + '</b></td>';
+      monthStatuses.forEach(function(s) { html += '<td style="text-align:center;">' + s + '</td>'; });
+      html += '<td class="total">' + totalPaid.toLocaleString() + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+
+    html += '<div class="summary">';
+    html += '<b>📊 Summary Report:</b><br>';
+    html += 'Total Members: <b>' + DB.members.length + '</b><br>';
+    html += 'Total Attendance Days: <b>' + grandTotalDays + '</b><br>';
+    html += 'Total Payments Collected: <b>Rs. ' + grandTotalPaid.toLocaleString() + '</b>';
+    html += '</div>';
+
+    html += '<div class="footer">';
+    html += 'DSSC WUSHU Management System<br>';
+    html += 'A creation by <b>Dinidu Wijesinghe</b>';
+    html += '</div>';
+
+    html += '</body></html>';
+
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'DSSC-Wushu-Report-' + year + '.doc';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    hideModal('exportModal');
+    toast('✅ Word document downloaded!');
+  }
+
   function renderAll() {
     renderMembers(); renderAttendance(); renderPaymentYearOptions(); renderMonthGrid(); renderPayments(); renderAchievements(); updateMemberDropdown();
   }
@@ -1089,7 +930,6 @@
     const rec = DB.attendance[date] || {};
     const presentIds = Object.keys(rec).filter(function(k) { return rec[k]; });
     const absentIds = DB.members.filter(function(m) { return !rec[m.id]; }).map(function(m) { return m.id; });
-
     let html = '';
     html += '<div class="day-summary">';
     html += '<div class="day-date">📅 ' + fmtDate(date) + '</div>';
@@ -1099,7 +939,6 @@
     html += '<div class="day-stat"><div class="n">' + absentIds.length + '</div><div class="l">Absent</div></div>';
     html += '<div class="day-stat"><div class="n">' + (DB.members.length > 0 ? Math.round((presentIds.length / DB.members.length) * 100) : 0) + '%</div><div class="l">Rate</div></div>';
     html += '</div></div>';
-
     html += '<div class="day-search">🔍 <input id="daySearchInput" placeholder="Search member name..." type="text" value="' + esc(dayDetailSearch) + '"></div>';
     html += '<div class="day-tabs">';
     html += '<button type="button" class="day-tab ' + (dayDetailFilter === 'all' ? 'active' : '') + '" data-day-filter="all">📋 All (' + DB.members.length + ')</button>';
@@ -1111,11 +950,9 @@
     html += '<button type="button" class="btn btn-blue btn-sm" data-goto-date="' + date + '">📋 Edit this day</button>';
     if (isAdmin) html += '<button type="button" class="btn btn-green btn-sm" data-mark-all-day="' + date + '">✅ Mark All Present</button>';
     html += '</div>';
-
     $('dayDetailContent').innerHTML = html;
     $('dayDetailTitle').textContent = '📅 ' + fmtDateShort(date);
     renderDayMemberCards(date);
-
     const searchInput = $('daySearchInput');
     if (searchInput) {
       searchInput.addEventListener('input', function() {
@@ -1164,7 +1001,6 @@
     });
   }
 
-  // ===== EVENTS =====
   function bindEvents() {
     $('loginForm').addEventListener('submit', handleLogin);
     $('btnLogout').addEventListener('click', handleLogout);
@@ -1182,6 +1018,7 @@
     $('btnAddMember').addEventListener('click', function() { openMemberModal(); });
     $('btnAddAch').addEventListener('click', function() { openAchModal(); });
     $('btnExport').addEventListener('click', openExportModal);
+    $('btnDownloadWord').addEventListener('click', downloadWord);
     $('btnDownloadCSV').addEventListener('click', downloadCSV);
     $('memberForm').addEventListener('submit', saveMember);
     $('memberSearch').addEventListener('input', renderMembers);
@@ -1212,7 +1049,6 @@
           if (t.classList.contains('toggle-pay')) { togglePayment(t.getAttribute('data-id')); return; }
           if (t.classList.contains('edit-ach')) { openAchModal(t.getAttribute('data-id')); return; }
           if (t.classList.contains('del-ach')) { deleteAch(t.getAttribute('data-id')); return; }
-
           if (t.classList.contains('date-item')) {
             const d = t.getAttribute('data-date');
             activeAttendanceDate = d;
@@ -1223,7 +1059,6 @@
             openDayDetail(d);
             return;
           }
-
           if (t.getAttribute && t.getAttribute('data-day-filter')) {
             dayDetailFilter = t.getAttribute('data-day-filter');
             document.querySelectorAll('.day-tab').forEach(function(tab) { tab.classList.remove('active'); });
@@ -1231,11 +1066,8 @@
             renderDayMemberCards(dayDetailActiveDate);
             return;
           }
-
           if (t.classList.contains('month-card')) { activePaymentMonth = t.getAttribute('data-month'); renderMonthGrid(); renderPayments(); return; }
-
           if (t.getAttribute && t.getAttribute('data-goto-date')) { gotoAttendanceDate(t.getAttribute('data-goto-date')); return; }
-
           if (t.getAttribute && t.getAttribute('data-mark-all-day')) {
             if (!isAdmin) { toast('🔒 Login required'); return; }
             const d2 = t.getAttribute('data-mark-all-day');
@@ -1247,7 +1079,6 @@
             })();
             return;
           }
-
           if (t.getAttribute && t.getAttribute('data-goto-attendance')) {
             if (!isAdmin) { toast('🔒 Login required'); return; }
             const mid2 = t.getAttribute('data-goto-attendance');
@@ -1259,7 +1090,6 @@
             })();
             return;
           }
-
           if (t.getAttribute && t.getAttribute('data-mark-paid')) {
             markMemberPaidCurrentMonth(t.getAttribute('data-mark-paid'));
             return;
