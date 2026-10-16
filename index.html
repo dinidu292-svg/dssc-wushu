@@ -174,23 +174,79 @@
 
   @media (max-width:600px) {
     body { padding:6px; }
+    .container { padding: 0; }
     .logo h1 { font-size:16px; }
+    .logo small { font-size: 8px; letter-spacing: 1px; }
     .card { padding:10px; border-radius:14px; }
-    .header { padding:12px 14px; }
+    .card-header { gap: 8px; }
+    .card-header h2 { font-size: 15px; }
+    .header { padding:12px 14px; border-radius:24px 24px 12px 12px; gap: 8px; }
+    .header-actions { width: 100%; justify-content: flex-start; }
     .tab { font-size:10px; padding:10px 4px; min-width:50px; }
     .btn { padding:9px 12px; font-size:11px; }
+    .btn-sm { padding:7px 9px; font-size:10px; }
+    .stat-row { gap: 6px; }
+    .stat-box { min-width:60px; padding:9px 8px; }
     .stat-box .num { font-size:15px; }
-    .modal { padding:14px; }
+    .stat-box .lbl { font-size:8px; letter-spacing: 0; }
+    .modal { padding:14px; margin:8px auto; border-radius:16px; }
+    .modal-header h3 { font-size: 15px; }
     .month-grid { grid-template-columns:repeat(3,1fr); gap:6px; }
+    .month-card { padding:9px 4px; }
+    .month-card .m-name { font-size:12px; }
+    .month-card .m-info { font-size:9px; }
     .ach-grid { grid-template-columns:1fr; }
     th, td { padding:9px 6px; font-size:12px; }
+    th { font-size:9px; letter-spacing: 0; }
     .form-group input, .form-group select, .form-group textarea { padding:11px 12px; font-size:16px; }
-    .toast { left:12px; right:12px; bottom:12px; font-size:12px; }
-    .user-info .email { max-width:80px; }
+    .toast { left:12px; right:12px; bottom:12px; text-align:center; font-size:12px; padding: 12px 18px; }
+    .history-list { max-height:220px; }
     .member-cards { max-height:340px; }
+    .day-summary { padding: 12px; }
+    .day-summary .day-date { font-size:14px; }
+    .day-summary .day-count { font-size: 11px; }
+    .day-summary .day-stat { padding: 6px 8px; min-width: 50px; }
+    .day-summary .day-stat .n { font-size: 15px; }
+    .day-summary .day-stat .l { font-size: 8px; }
     .day-tab { font-size: 10px; padding: 8px 6px; min-width: 70px; }
+    .member-card { padding: 10px; gap: 8px; }
     .member-card .avatar { width: 38px; height: 38px; font-size: 14px; }
+    .member-card .mc-name { font-size: 13px; }
+    .member-card .mc-info { font-size: 10px; }
+    .date-item { padding: 10px 12px; }
+    .date-label { font-size: 13px; }
+    .date-meta { font-size: 10px; }
+    .date-names { font-size: 9px; }
+    .footer { padding: 16px 12px 12px; margin-top: 16px; border-radius: 14px 14px 6px 6px; }
+    .footer .footer-logo { font-size: 15px; }
+    .footer .footer-text { font-size: 11px; }
+    .footer .footer-text strong { padding: 2px 8px; font-size: 11px; }
+    .footer .footer-copy { font-size: 10px; }
+    .footer .footer-divider { width: 40px; }
+    .search-box { padding: 6px 12px; }
+    .search-box input { font-size: 13px; }
+    .user-info .email { max-width:80px; }
   }
+
+  @media (max-width:380px) {
+    .tab { font-size:9px; min-width:45px; padding:8px 3px; }
+    .stat-box .num { font-size:13px; }
+    .stat-box .lbl { font-size: 7px; }
+    .member-card .avatar { width:34px; height:34px; font-size:12px; }
+    .footer .footer-logo { font-size: 13px; }
+    .footer .footer-text { font-size: 10px; }
+    .footer .footer-text strong { font-size: 10px; padding: 2px 6px; }
+    .footer .footer-copy { font-size: 9px; }
+    .month-grid { grid-template-columns: repeat(3, 1fr); }
+    .month-card .m-name { font-size: 11px; }
+    .month-card .m-info { font-size: 8px; }
+    .day-summary .day-date { font-size: 13px; }
+    .day-summary .day-stat .n { font-size: 13px; }
+  }
+
+  .history-list::-webkit-scrollbar, .member-cards::-webkit-scrollbar { width:5px; }
+  .history-list::-webkit-scrollbar-track, .member-cards::-webkit-scrollbar-track { background:#f0f4f8; border-radius:10px; }
+  .history-list::-webkit-scrollbar-thumb, .member-cards::-webkit-scrollbar-thumb { background:#c5d0de; border-radius:10px; }
 </style>
 </head>
 <body>
@@ -462,6 +518,7 @@
       <select id="exportYear" class="year-select" style="width:100%;"></select>
     </div>
     <div class="form-actions" style="justify-content:flex-end;">
+      <button class="btn btn-blue" id="btnDownloadWord" type="button">📄 Download Word</button>
       <button class="btn btn-green" id="btnDownloadCSV" type="button">📥 Download CSV</button>
       <button class="btn btn-gold" data-close="exportModal" type="button">Cancel</button>
     </div>
@@ -504,17 +561,14 @@
   function calcAge(dob) { if (!dob) return ''; const d = new Date(dob + 'T00:00:00'); if (isNaN(d.getTime())) return ''; const diff = Date.now() - d.getTime(); return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000)); }
   function showSync(syncing) { const s = $('syncStatus'); if (syncing) { s.textContent = '🔄 Syncing...'; s.classList.add('syncing'); } else { s.textContent = '✅ Synced'; s.classList.remove('syncing'); } s.classList.add('show'); clearTimeout(s._t); s._t = setTimeout(function() { s.classList.remove('show'); }, 2000); }
 
-  // ===== AUTH =====
   async function checkAuth() {
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
-        isAdmin = true;
-        currentUser = session.user;
+        isAdmin = true; currentUser = session.user;
         $('loginScreen').classList.add('hidden');
         $('userEmail').textContent = session.user.email;
-        await loadAll();
-        setupRealtime();
+        await loadAll(); setupRealtime();
       } else {
         isAdmin = false;
         $('loginScreen').classList.remove('hidden');
@@ -536,8 +590,7 @@
     $('loginScreen').classList.add('hidden');
     $('userEmail').textContent = data.user.email;
     toast('Welcome ' + data.user.email);
-    await loadAll();
-    setupRealtime();
+    await loadAll(); setupRealtime();
   }
 
   async function handleLogout() {
@@ -548,7 +601,6 @@
     toast('Logged out');
   }
 
-  // ===== DATA LOADING =====
   async function loadAll() {
     showSync(true);
     try {
@@ -561,10 +613,7 @@
       DB.members = mRes.data || [];
       DB.attendance = {};
       (aRes.data || []).forEach(function(r) {
-        if (r.present) {
-          if (!DB.attendance[r.date]) DB.attendance[r.date] = {};
-          DB.attendance[r.date][r.member_id] = true;
-        }
+        if (r.present) { if (!DB.attendance[r.date]) DB.attendance[r.date] = {}; DB.attendance[r.date][r.member_id] = true; }
       });
       DB.payments = {};
       (pRes.data || []).forEach(function(r) {
@@ -582,14 +631,12 @@
     if (realtimeChannel) sb.removeChannel(realtimeChannel);
     realtimeChannel = sb.channel('db-changes')
       .on('postgres_changes', { event: '*', schema: 'public' }, function(payload) {
-        console.log('Realtime:', payload);
         showSync(true);
         loadAll().then(function() { showSync(false); });
       })
       .subscribe();
   }
 
-  // ===== MEMBERS =====
   function renderMembers() {
     const search = ($('memberSearch') ? $('memberSearch').value : '').toLowerCase();
     const tbody = $('membersBody'); const empty = $('membersEmpty'); tbody.innerHTML = '';
@@ -661,13 +708,9 @@
     if (!m) return;
     const age = m.age || calcAge(m.dob);
     $('memberDetailTitle').textContent = '👤 ' + m.name;
-
     const attendedDates = [];
-    Object.keys(DB.attendance).forEach(function(date) {
-      if (DB.attendance[date] && DB.attendance[date][memberId]) attendedDates.push(date);
-    });
+    Object.keys(DB.attendance).forEach(function(date) { if (DB.attendance[date] && DB.attendance[date][memberId]) attendedDates.push(date); });
     attendedDates.sort().reverse();
-
     const paymentRecords = [];
     Object.keys(DB.payments).forEach(function(monthKey) {
       const rec = DB.payments[monthKey] ? DB.payments[monthKey][memberId] : null;
@@ -680,14 +723,12 @@
       }
     });
     paymentRecords.sort(function(a,b) { return b.month.localeCompare(a.month); });
-
     let html = '';
     html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">';
     html += '<div class="stat-box green" style="flex:1;min-width:80px;"><div class="num">' + attendedDates.length + '</div><div class="lbl">Days Attended</div></div>';
     const paidMonths = paymentRecords.filter(function(p){ return !p.unpaid; }).length;
     html += '<div class="stat-box blue" style="flex:1;min-width:80px;"><div class="num">' + paidMonths + '</div><div class="lbl">Months Paid</div></div>';
     html += '</div>';
-
     html += '<div style="background:#f8faff;border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.8;word-break:break-word;">';
     if (age) html += '<div>🎂 <strong>Age:</strong> ' + age + ' years</div>';
     if (m.phone) html += '<div>📞 <strong>Phone:</strong> ' + esc(m.phone) + '</div>';
@@ -695,12 +736,10 @@
     if (m.joined) html += '<div>📅 <strong>Joined:</strong> ' + fmtDate(m.joined) + '</div>';
     if (m.address) html += '<div>📍 <strong>Address:</strong> ' + esc(m.address) + '</div>';
     html += '</div>';
-
     html += '<div class="history-section"><h4>✅ Attendance History (' + attendedDates.length + ' days)</h4>';
     if (attendedDates.length === 0) html += '<p style="color:#8898ab;font-size:12px;text-align:center;padding:12px;">No attendance records yet.</p>';
     else { html += '<div class="history-list">'; attendedDates.forEach(function(date) { html += '<div class="history-item attendance-present" data-goto-date="' + date + '"><span class="history-date">📅 ' + fmtDate(date) + '</span><span class="badge badge-green">✅ Present</span></div>'; }); html += '</div>'; }
     html += '</div>';
-
     html += '<div class="history-section"><h4>💰 Payment History</h4>';
     if (paymentRecords.length === 0) html += '<p style="color:#8898ab;font-size:12px;text-align:center;padding:12px;">No payment records yet.</p>';
     else {
@@ -714,19 +753,16 @@
       html += '</div>';
     }
     html += '</div>';
-
     if (isAdmin) {
       html += '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">';
       html += '<button type="button" class="btn btn-blue btn-sm" data-goto-attendance="' + memberId + '">✅ Mark Attendance Today</button>';
       html += '<button type="button" class="btn btn-green btn-sm" data-mark-paid="' + memberId + '">💰 Mark Paid This Month</button>';
       html += '</div>';
     }
-
     $('memberDetailContent').innerHTML = html;
     showModal('memberDetailModal');
   }
 
-  // ===== ATTENDANCE =====
   function renderAttendance() {
     const dateEl = $('attendanceDate');
     if (!dateEl.value) dateEl.value = activeAttendanceDate || todayISO();
@@ -806,7 +842,6 @@
     toast('Day cleared');
   }
 
-  // ===== PAYMENTS =====
   function renderPaymentYearOptions() {
     const sel = $('paymentYear'); const cy = new Date().getFullYear(); sel.innerHTML = '';
     for (let y = cy - 3; y <= cy + 2; y++) {
@@ -890,7 +925,6 @@
     toast('Payment recorded ✅');
   }
 
-  // ===== ACHIEVEMENTS =====
   function updateMemberDropdown() {
     const sel = $('achMember'); sel.innerHTML = '<option value="">-- Team / All --</option>';
     DB.members.forEach(function(m) { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.name; sel.appendChild(opt); });
@@ -971,7 +1005,6 @@
     await loadAll();
   }
 
-  // ===== EXPORT =====
   function openExportModal() {
     if (!isAdmin) { toast('🔒 Login required'); return; }
     const sel = $('exportYear');
@@ -994,7 +1027,6 @@
     if (DB.members.length === 0) { toast('Members නැහැ'); return; }
 
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
     const rows = [];
     const header = ['#', 'Name', 'Age', 'Phone', 'Parent', 'Parent Phone', 'Joined', 'Days Attended'];
     monthNames.forEach(function(m) { header.push(m); });
@@ -1003,39 +1035,20 @@
 
     DB.members.forEach(function(m, i) {
       const age = m.age || calcAge(m.dob);
-
       let daysAttended = 0;
       Object.keys(DB.attendance).forEach(function(date) {
-        if (date.startsWith(year + '-') && DB.attendance[date] && DB.attendance[date][m.id]) {
-          daysAttended++;
-        }
+        if (date.startsWith(year + '-') && DB.attendance[date] && DB.attendance[date][m.id]) daysAttended++;
       });
-
       const monthStatuses = [];
       let monthsPaidCount = 0;
       for (let mo = 1; mo <= 12; mo++) {
         const key = year + '-' + String(mo).padStart(2, '0');
         const rec = DB.payments[key] ? DB.payments[key][m.id] : null;
-        if (rec && rec.paid) {
-          monthStatuses.push('Paid');
-          monthsPaidCount++;
-        } else {
-          monthStatuses.push('-');
-        }
+        if (rec && rec.paid) { monthStatuses.push('Paid'); monthsPaidCount++; }
+        else { monthStatuses.push('-'); }
       }
-
       const totalPaid = monthsPaidCount * 1000;
-
-      const row = [
-        i + 1,
-        m.name || '',
-        age || '',
-        m.phone || '',
-        m.parent || '',
-        m.parent_phone || '',
-        m.joined || '',
-        daysAttended
-      ];
+      const row = [i + 1, m.name || '', age || '', m.phone || '', m.parent || '', m.parent_phone || '', m.joined || '', daysAttended];
       monthStatuses.forEach(function(s) { row.push(s); });
       row.push(totalPaid);
       rows.push(row);
@@ -1044,9 +1057,7 @@
     const csvContent = rows.map(function(row) {
       return row.map(function(cell) {
         let s = String(cell == null ? '' : cell);
-        if (s.indexOf(',') > -1 || s.indexOf('"') > -1 || s.indexOf('\n') > -1) {
-          s = '"' + s.replace(/"/g, '""') + '"';
-        }
+        if (s.indexOf(',') > -1 || s.indexOf('"') > -1 || s.indexOf('\n') > -1) s = '"' + s.replace(/"/g, '""') + '"';
         return s;
       }).join(',');
     }).join('\n');
@@ -1057,16 +1068,112 @@
     const a = document.createElement('a');
     a.href = url;
     a.download = 'DSSC-Wushu-MemberSummary-' + year + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     hideModal('exportModal');
-    toast('✅ Report downloaded!');
+    toast('✅ CSV downloaded!');
   }
 
-  // ===== RENDER ALL =====
+  function downloadWord() {
+    if (!isAdmin) { toast('🔒 Login required'); return; }
+    const year = $('exportYear').value;
+    if (!year) { toast('Year select කරන්න'); return; }
+    if (DB.members.length === 0) { toast('Members නැහැ'); return; }
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
+    html += '<head><meta charset="UTF-8"><title>DSSC Wushu Report ' + year + '</title>';
+    html += '<style>';
+    html += 'body { font-family: "Segoe UI", Arial, sans-serif; padding: 20px; }';
+    html += 'h1 { color: #0b2b3d; text-align: center; font-size: 24px; margin-bottom: 5px; }';
+    html += 'h1 span { color: #f7c35c; }';
+    html += '.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 8px; }';
+    html += '.info { text-align: center; color: #888; font-size: 11px; margin-bottom: 20px; }';
+    html += 'table { width: 100%; border-collapse: collapse; font-size: 10px; }';
+    html += 'th { background-color: #0b2b3d; color: #fff; padding: 8px 5px; text-align: left; border: 1px solid #0b2b3d; font-weight: bold; }';
+    html += 'td { padding: 6px 5px; border: 1px solid #ddd; }';
+    html += 'tr:nth-child(even) td { background-color: #f8faff; }';
+    html += '.paid { color: #2e7d5e; font-weight: bold; }';
+    html += '.unpaid { color: #c0392b; }';
+    html += '.total { font-weight: bold; color: #0b2b3d; text-align: right; }';
+    html += '.footer { text-align: center; margin-top: 30px; color: #888; font-size: 11px; border-top: 2px solid #f7c35c; padding-top: 10px; }';
+    html += '.summary { margin-top: 20px; padding: 14px; background: #f8faff; border-left: 4px solid #f7c35c; font-size: 13px; line-height: 1.8; }';
+    html += '.summary b { color: #0b2b3d; }';
+    html += '</style></head><body>';
+
+    html += '<h1>DSSC <span>WUSHU</span></h1>';
+    html += '<div class="subtitle">Member Summary Report — ' + year + '</div>';
+    html += '<div class="info">Generated on: ' + new Date().toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) + '</div>';
+
+    html += '<table>';
+    html += '<thead><tr>';
+    html += '<th>#</th><th>Name</th><th>Age</th><th>Phone</th><th>Parent</th><th>Joined</th><th>Days</th>';
+    monthNames.forEach(function(m) { html += '<th>' + m + '</th>'; });
+    html += '<th>Total (Rs.)</th>';
+    html += '</tr></thead><tbody>';
+
+    let grandTotalDays = 0;
+    let grandTotalPaid = 0;
+
+    DB.members.forEach(function(m, i) {
+      const age = m.age || calcAge(m.dob);
+      let daysAttended = 0;
+      Object.keys(DB.attendance).forEach(function(date) {
+        if (date.startsWith(year + '-') && DB.attendance[date] && DB.attendance[date][m.id]) daysAttended++;
+      });
+      grandTotalDays += daysAttended;
+
+      let monthsPaidCount = 0;
+      const monthStatuses = [];
+      for (let mo = 1; mo <= 12; mo++) {
+        const key = year + '-' + String(mo).padStart(2, '0');
+        const rec = DB.payments[key] ? DB.payments[key][m.id] : null;
+        if (rec && rec.paid) { monthStatuses.push('<span class="paid">✓</span>'); monthsPaidCount++; }
+        else { monthStatuses.push('<span class="unpaid">—</span>'); }
+      }
+
+      const totalPaid = monthsPaidCount * 1000;
+      grandTotalPaid += totalPaid;
+
+      html += '<tr>';
+      html += '<td>' + (i + 1) + '</td>';
+      html += '<td><b>' + esc(m.name || '') + '</b></td>';
+      html += '<td>' + (age || '—') + '</td>';
+      html += '<td>' + esc(m.phone || '—') + '</td>';
+      html += '<td>' + esc(m.parent || '—') + '</td>';
+      html += '<td>' + (m.joined || '—') + '</td>';
+      html += '<td><b>' + daysAttended + '</b></td>';
+      monthStatuses.forEach(function(s) { html += '<td style="text-align:center;">' + s + '</td>'; });
+      html += '<td class="total">' + totalPaid.toLocaleString() + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+
+    html += '<div class="summary">';
+    html += '<b>📊 Summary Report:</b><br>';
+    html += 'Total Members: <b>' + DB.members.length + '</b><br>';
+    html += 'Total Attendance Days: <b>' + grandTotalDays + '</b><br>';
+    html += 'Total Payments Collected: <b>Rs. ' + grandTotalPaid.toLocaleString() + '</b>';
+    html += '</div>';
+
+    html += '<div class="footer">';
+    html += 'DSSC WUSHU Management System<br>';
+    html += 'A creation by <b>Dinidu Wijesinghe</b>';
+    html += '</div>';
+
+    html += '</body></html>';
+
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'DSSC-Wushu-Report-' + year + '.doc';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    hideModal('exportModal');
+    toast('✅ Word document downloaded!');
+  }
+
   function renderAll() {
     renderMembers(); renderAttendance(); renderPaymentYearOptions(); renderMonthGrid(); renderPayments(); renderAchievements(); updateMemberDropdown();
   }
@@ -1089,7 +1196,6 @@
     const rec = DB.attendance[date] || {};
     const presentIds = Object.keys(rec).filter(function(k) { return rec[k]; });
     const absentIds = DB.members.filter(function(m) { return !rec[m.id]; }).map(function(m) { return m.id; });
-
     let html = '';
     html += '<div class="day-summary">';
     html += '<div class="day-date">📅 ' + fmtDate(date) + '</div>';
@@ -1099,7 +1205,6 @@
     html += '<div class="day-stat"><div class="n">' + absentIds.length + '</div><div class="l">Absent</div></div>';
     html += '<div class="day-stat"><div class="n">' + (DB.members.length > 0 ? Math.round((presentIds.length / DB.members.length) * 100) : 0) + '%</div><div class="l">Rate</div></div>';
     html += '</div></div>';
-
     html += '<div class="day-search">🔍 <input id="daySearchInput" placeholder="Search member name..." type="text" value="' + esc(dayDetailSearch) + '"></div>';
     html += '<div class="day-tabs">';
     html += '<button type="button" class="day-tab ' + (dayDetailFilter === 'all' ? 'active' : '') + '" data-day-filter="all">📋 All (' + DB.members.length + ')</button>';
@@ -1111,11 +1216,9 @@
     html += '<button type="button" class="btn btn-blue btn-sm" data-goto-date="' + date + '">📋 Edit this day</button>';
     if (isAdmin) html += '<button type="button" class="btn btn-green btn-sm" data-mark-all-day="' + date + '">✅ Mark All Present</button>';
     html += '</div>';
-
     $('dayDetailContent').innerHTML = html;
     $('dayDetailTitle').textContent = '📅 ' + fmtDateShort(date);
     renderDayMemberCards(date);
-
     const searchInput = $('daySearchInput');
     if (searchInput) {
       searchInput.addEventListener('input', function() {
@@ -1164,7 +1267,6 @@
     });
   }
 
-  // ===== EVENTS =====
   function bindEvents() {
     $('loginForm').addEventListener('submit', handleLogin);
     $('btnLogout').addEventListener('click', handleLogout);
@@ -1182,6 +1284,7 @@
     $('btnAddMember').addEventListener('click', function() { openMemberModal(); });
     $('btnAddAch').addEventListener('click', function() { openAchModal(); });
     $('btnExport').addEventListener('click', openExportModal);
+    $('btnDownloadWord').addEventListener('click', downloadWord);
     $('btnDownloadCSV').addEventListener('click', downloadCSV);
     $('memberForm').addEventListener('submit', saveMember);
     $('memberSearch').addEventListener('input', renderMembers);
@@ -1212,7 +1315,6 @@
           if (t.classList.contains('toggle-pay')) { togglePayment(t.getAttribute('data-id')); return; }
           if (t.classList.contains('edit-ach')) { openAchModal(t.getAttribute('data-id')); return; }
           if (t.classList.contains('del-ach')) { deleteAch(t.getAttribute('data-id')); return; }
-
           if (t.classList.contains('date-item')) {
             const d = t.getAttribute('data-date');
             activeAttendanceDate = d;
@@ -1223,7 +1325,6 @@
             openDayDetail(d);
             return;
           }
-
           if (t.getAttribute && t.getAttribute('data-day-filter')) {
             dayDetailFilter = t.getAttribute('data-day-filter');
             document.querySelectorAll('.day-tab').forEach(function(tab) { tab.classList.remove('active'); });
@@ -1231,11 +1332,8 @@
             renderDayMemberCards(dayDetailActiveDate);
             return;
           }
-
           if (t.classList.contains('month-card')) { activePaymentMonth = t.getAttribute('data-month'); renderMonthGrid(); renderPayments(); return; }
-
           if (t.getAttribute && t.getAttribute('data-goto-date')) { gotoAttendanceDate(t.getAttribute('data-goto-date')); return; }
-
           if (t.getAttribute && t.getAttribute('data-mark-all-day')) {
             if (!isAdmin) { toast('🔒 Login required'); return; }
             const d2 = t.getAttribute('data-mark-all-day');
@@ -1247,7 +1345,6 @@
             })();
             return;
           }
-
           if (t.getAttribute && t.getAttribute('data-goto-attendance')) {
             if (!isAdmin) { toast('🔒 Login required'); return; }
             const mid2 = t.getAttribute('data-goto-attendance');
@@ -1259,7 +1356,6 @@
             })();
             return;
           }
-
           if (t.getAttribute && t.getAttribute('data-mark-paid')) {
             markMemberPaidCurrentMonth(t.getAttribute('data-mark-paid'));
             return;
